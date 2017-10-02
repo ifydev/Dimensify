@@ -47,7 +47,7 @@ public class DimensifyCommand implements CommandExecutor {
                 }
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD));
                 WorldCreator creator = new WorldCreator(worldName);
-                doWorldCreateSync(plugin.get(), creator, (Player) sender);
+                plugin.get().getWorldController().loadWorld(creator, plugin.get());
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_ARENT_A_PLAYER));
@@ -60,10 +60,7 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 String worldName = args[1];
-                if (Bukkit.getWorld(worldName) == null && plugin.get().getWorldNames().contains(worldName)) {
-                    // Load the world
-                    doWorldCreateSync(plugin.get(), new WorldCreator(worldName), null);
-                } else if (Bukkit.getWorld(worldName) == null) {
+                if (Bukkit.getWorld(worldName) == null && !plugin.get().getWorldNames().contains(worldName)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;
                 }
@@ -78,44 +75,25 @@ public class DimensifyCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_DELETE));
                     return;
                 }
-
-                String worldName = String.join("_", ArgumentUtil.getRemainingArgs(2, args));
+                String worldName = String.join("_", ArgumentUtil.getRemainingArgs(1, args));
                 // Make sure the world exists
-                if (Bukkit.getWorld(worldName) == null) {
-                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD));
+                if (Bukkit.getWorld(worldName) == null && plugin.get().getWorldNames().contains(worldName)) {
+                    // Load the world
+                    plugin.get().getWorldController().loadWorld(new WorldCreator(worldName), plugin.get());
+                } else if (Bukkit.getWorld(worldName) == null) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;
                 }
-
                 // World exists, delete it
-                World world = Bukkit.getWorld(worldName);
-                deleteWorldSync(plugin.get(), world, sender);
+                boolean deleted = plugin.get().getWorldController().deleteWorld(worldName);
+                String response = deleted ? DimensifyConstants.WORLD_DELETED : DimensifyConstants.INVALID_WORLD;
+                response = response.replace("<WORLD>", worldName);
+                sender.sendMessage(ColorUtil.makeReadable(response));
                 return;
             }
             // TODO: send help to the player here
         });
 
         return false;
-    }
-
-    private void doWorldCreateSync(DimensifyMain plugin, WorldCreator creator, Player player) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            creator.createWorld();
-            if (player != null) {
-                plugin.addWorld(creator.name());
-                player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", creator.name())));
-            }
-        });
-    }
-
-    private void deleteWorldSync(Plugin plugin, World world, CommandSender sender) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            Bukkit.unloadWorld(world, false);
-            boolean deleted = world.getWorldFolder().delete();
-            if (deleted) {
-                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_DELETED));
-                return;
-            }
-            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD));
-        });
     }
 }

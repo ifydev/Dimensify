@@ -27,11 +27,13 @@ package me.ifydev.dimensifyspigot;
 import lombok.Getter;
 import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
+import me.ifydev.dimensifyspigot.controller.WorldController;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -45,6 +47,9 @@ public class DimensifyMain extends JavaPlugin {
     @Getter private DimensifyAPI api;
     @Getter private boolean preloadWorlds = false;
     @Getter private List<String> worldNames;
+    @Getter private List<String> allWorlds;
+
+    @Getter private WorldController worldController;
 
     @Override
     public void onEnable() {
@@ -53,10 +58,16 @@ public class DimensifyMain extends JavaPlugin {
         api.intialize();
         getLogger().info("Done!");
 
+        worldController = new WorldController();
+
         createConfig();
 
-        preloadWorlds = getConfig().getBoolean("preload_worlds", false);
-        worldNames = getConfig().getStringList("worlds");
+        preloadWorlds = getConfig().getBoolean("preload_worlds", true);
+
+        allWorlds = getConfig().getStringList("worlds");
+        worldNames = new ArrayList<>();
+
+        if (preloadWorlds) worldController.loadAllWorlds(allWorlds, this);
 
         registerListeners();
         registerCommands();
