@@ -1,4 +1,4 @@
-package me.ifydev.dimensifyspigot.controller;
+package me.ifydev.dimensifyspigot.world;
 
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import org.apache.commons.io.FileUtils;
@@ -26,13 +26,11 @@ public class WorldController {
     }
 
     public boolean deleteWorld(String worldName) {
-        System.out.println("A: " + worldName);
         World world = Bukkit.getWorld(worldName);
         if (world == null) return false;
-        System.out.println("B");
         File folder = world.getWorldFolder();
         Bukkit.unloadWorld(world, false);
-        System.out.println("C");
+
         try {
             FileUtils.deleteDirectory(folder);
         } catch (IOException e) {
