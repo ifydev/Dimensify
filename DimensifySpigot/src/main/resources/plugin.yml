@@ -1,0 +1,8 @@
+name: Dimensify
+version: 0.0.1
+main: me.ifydev.dimensifyspigot.DimensifyMain
+author: IfyDev
+
+commands:
+  dimensify:
+    decsription: "Do things with dimensions"

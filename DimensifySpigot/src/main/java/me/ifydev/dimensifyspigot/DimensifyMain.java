@@ -24,9 +24,51 @@
  */
 package me.ifydev.dimensifyspigot;
 
+import lombok.Getter;
+import me.ifydev.dimensify.api.DimensifyAPI;
+import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
+import me.ifydev.dimensifyspigot.events.PlayerJoin;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Optional;
+
 /**
  * @author Innectic
  * @since 10/1/2017
  */
-public class DimensifyMain {
+public class DimensifyMain extends JavaPlugin {
+
+    @Getter private DimensifyAPI api;
+
+    @Override
+    public void onEnable() {
+        getLogger().info("Initializing Dimensify API...");
+        api = new DimensifyAPI();
+        api.intialize();
+        getLogger().info("Done!");
+
+        registerListeners();
+        registerCommands();
+    }
+
+    @Override
+    public void onDisable() {
+
+    }
+
+    private void registerListeners() {
+        PluginManager manager = getServer().getPluginManager();
+
+        manager.registerEvents(new PlayerJoin(), this);
+    }
+
+    private void registerCommands() {
+        getCommand("dimensify").setExecutor(new DimensifyCommand());
+    }
+
+    public static Optional<DimensifyMain> get() {
+        return Optional.ofNullable(DimensifyMain.getPlugin(DimensifyMain.class));
+    }
 }
