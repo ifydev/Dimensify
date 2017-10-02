@@ -38,6 +38,7 @@ public class DimensifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_CREATE_WORLD = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify create [dimension_type] [world_name]";
     public static final String NOT_ENOUGH_ARGUMENTS_SEND_PLAYER = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify send [player] [world_name]";
     public static final String NOT_ENOUGH_ARGUMENTS_GO = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify go [world_name]";
+    public static final String NOT_ENOUGH_ARGUMENTS_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify delete [world_name]";
 
     // General errors
     public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "Unable to continue: Plugin not present!";
@@ -47,4 +48,6 @@ public class DimensifyConstants {
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
     public static final String WORLD_CREATED = DIMENSIFY_PREFIX + "World '<WORLD>' created.";
+    public static final String WHOOSH = DIMENSIFY_PREFIX + "Whoosh!";
+    public static final String WORLD_DELETED = DIMENSIFY_PREFIX + "World '<WORLD>' has been deleted.";
 }

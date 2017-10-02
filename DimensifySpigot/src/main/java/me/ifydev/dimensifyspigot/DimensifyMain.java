@@ -28,11 +28,13 @@ import lombok.Getter;
 import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 
 /**
  * @author Innectic
@@ -41,6 +43,8 @@ import java.util.Optional;
 public class DimensifyMain extends JavaPlugin {
 
     @Getter private DimensifyAPI api;
+    @Getter private boolean preloadWorlds = false;
+    @Getter private List<String> worldNames;
 
     @Override
     public void onEnable() {
@@ -48,6 +52,11 @@ public class DimensifyMain extends JavaPlugin {
         api = new DimensifyAPI();
         api.intialize();
         getLogger().info("Done!");
+
+        createConfig();
+
+        preloadWorlds = getConfig().getBoolean("preload_worlds", false);
+        worldNames = getConfig().getStringList("worlds");
 
         registerListeners();
         registerCommands();
@@ -66,6 +75,31 @@ public class DimensifyMain extends JavaPlugin {
 
     private void registerCommands() {
         getCommand("dimensify").setExecutor(new DimensifyCommand());
+    }
+
+    private void createConfig() {
+        try {
+            if (!getDataFolder().exists()) {
+                boolean created = getDataFolder().mkdirs();
+                if (!created) getLogger().log(Level.SEVERE, "Could not create config!");
+            }
+            File file = new File(getDataFolder(), "config.yml");
+            if (!file.exists()) {
+                getLogger().info("Config.yml not found, creating!");
+                saveDefaultConfig();
+            } else {
+                getLogger().info("Config.yml found, loading!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+    }
+
+    public void addWorld(String name) {
+        worldNames.add(name);
+        getConfig().set("worlds", worldNames);
+        saveConfig();
     }
 
     public static Optional<DimensifyMain> get() {

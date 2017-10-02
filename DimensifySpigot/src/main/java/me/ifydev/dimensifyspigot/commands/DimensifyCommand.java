@@ -60,7 +60,10 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 String worldName = args[1];
-                if (Bukkit.getWorld(worldName) == null) {
+                if (Bukkit.getWorld(worldName) == null && plugin.get().getWorldNames().contains(worldName)) {
+                    // Load the world
+                    doWorldCreateSync(plugin.get(), new WorldCreator(worldName), null);
+                } else if (Bukkit.getWorld(worldName) == null) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;
                 }
@@ -68,18 +71,51 @@ public class DimensifyCommand implements CommandExecutor {
                 Bukkit.getScheduler().runTask(plugin.get(), () -> {
                     World world = Bukkit.getWorld(worldName);
                     ((Player) sender).teleport(world.getSpawnLocation());
-                    sender.sendMessage("Woosh!");
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WHOOSH));
                 });
+            } else if (args[0].equalsIgnoreCase("delete")) {
+                if (args.length < 2) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_DELETE));
+                    return;
+                }
+
+                String worldName = String.join("_", ArgumentUtil.getRemainingArgs(2, args));
+                // Make sure the world exists
+                if (Bukkit.getWorld(worldName) == null) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD));
+                    return;
+                }
+
+                // World exists, delete it
+                World world = Bukkit.getWorld(worldName);
+                deleteWorldSync(plugin.get(), world, sender);
+                return;
             }
+            // TODO: send help to the player here
         });
 
         return false;
     }
 
-    private void doWorldCreateSync(Plugin plugin, WorldCreator creator, Player player) {
+    private void doWorldCreateSync(DimensifyMain plugin, WorldCreator creator, Player player) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             creator.createWorld();
-            player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", creator.name())));
+            if (player != null) {
+                plugin.addWorld(creator.name());
+                player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", creator.name())));
+            }
+        });
+    }
+
+    private void deleteWorldSync(Plugin plugin, World world, CommandSender sender) {
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            Bukkit.unloadWorld(world, false);
+            boolean deleted = world.getWorldFolder().delete();
+            if (deleted) {
+                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_DELETED));
+                return;
+            }
+            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD));
         });
     }
 }
