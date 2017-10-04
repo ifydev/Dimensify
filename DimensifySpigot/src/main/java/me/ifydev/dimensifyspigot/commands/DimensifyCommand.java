@@ -7,13 +7,11 @@ import me.ifydev.dimensifyspigot.util.ColorUtil;
 import me.ifydev.dimensifyspigot.world.DimensifyWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.util.Optional;
 
@@ -56,7 +54,8 @@ public class DimensifyCommand implements CommandExecutor {
                 }
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD));
                 DimensifyWorld creator = new DimensifyWorld(worldName, plugin.get());
-                plugin.get().getWorldController().loadWorld(creator, plugin.get());
+                creator.type(type);
+                Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_ARENT_A_PLAYER));
