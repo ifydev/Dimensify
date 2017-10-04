@@ -4,9 +4,11 @@ import me.ifydev.dimensify.api.DimensifyConstants;
 import me.ifydev.dimensify.api.util.ArgumentUtil;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
+import me.ifydev.dimensifyspigot.world.DimensifyWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -38,6 +40,13 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 String dimensionType = args[1];
+                WorldType type = WorldType.getByName(dimensionType);
+                if (type == null) {
+                    // Invalid dimension type
+                    sender.sendMessage(DimensifyConstants.INVALID_DIMENSION_TYPE.replace("<TYPE>", dimensionType));
+                    return;
+                }
+
                 String worldName = String.join("_", ArgumentUtil.getRemainingArgs(2, args));
 
                 // Ensure a world with that name doesn't exist already
@@ -46,7 +55,7 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD));
-                WorldCreator creator = new WorldCreator(worldName);
+                DimensifyWorld creator = new DimensifyWorld(worldName, plugin.get());
                 plugin.get().getWorldController().loadWorld(creator, plugin.get());
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
@@ -79,7 +88,7 @@ public class DimensifyCommand implements CommandExecutor {
                 // Make sure the world exists
                 if (Bukkit.getWorld(worldName) == null && plugin.get().getWorldNames().contains(worldName)) {
                     // Load the world
-                    plugin.get().getWorldController().loadWorld(new WorldCreator(worldName), plugin.get());
+                    plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get());
                 } else if (Bukkit.getWorld(worldName) == null) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;

@@ -44,6 +44,7 @@ public class DimensifyConstants {
     public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "Unable to continue: Plugin not present!";
     public static final String WORLD_EXISTS = DIMENSIFY_PREFIX + "World '<WORLD>' already exists!";
     public static final String INVALID_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' doesn't exist.";
+    public static final String INVALID_DIMENSION_TYPE = DIMENSIFY_PREFIX + "Dimension type '<TYPE>' is invalid.";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";

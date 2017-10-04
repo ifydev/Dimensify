@@ -4,7 +4,6 @@ import me.ifydev.dimensifyspigot.DimensifyMain;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,10 +16,10 @@ import java.util.List;
 public class WorldController {
 
     public void loadAllWorlds(List<String> worldNames,  DimensifyMain plugin) {
-        worldNames.forEach(name -> loadWorld(new WorldCreator(name), plugin));
+        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin), plugin));
     }
 
-    public void loadWorld(WorldCreator creator, DimensifyMain plugin) {
+    public void loadWorld(DimensifyWorld creator, DimensifyMain plugin) {
         creator.createWorld();
         plugin.getWorldNames().add(creator.name());
     }
