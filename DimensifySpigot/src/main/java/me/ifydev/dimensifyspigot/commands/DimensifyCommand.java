@@ -45,7 +45,9 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
 
-                String worldName = String.join("_", ArgumentUtil.getRemainingArgs(2, args));
+                String worldName = args[2];
+                // Remaining arguments are referred to as meta.
+                String[] metas = ArgumentUtil.getRemainingArgs(2, args);
 
                 // Ensure a world with that name doesn't exist already
                 if (Bukkit.getWorld(worldName) != null) {
@@ -55,6 +57,42 @@ public class DimensifyCommand implements CommandExecutor {
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD));
                 DimensifyWorld creator = new DimensifyWorld(worldName, plugin.get());
                 creator.type(type);
+                creator.generateStructures(false);
+
+                for (String meta : metas) {
+                    // Check the metas that are present. Set attributes on the world creator if we care about any of them.
+
+                    if (meta.equalsIgnoreCase("structure")) creator.generateStructures(true);
+                    else if (meta.toLowerCase().startsWith("env=")) {
+                        String[] split = meta.split("env=");
+
+                        if (split.length != 2) {
+                            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.ENV_NOT_PROVIDED));
+                            return;
+                        }
+
+                        String potentialEnvironmentType = split[1];
+                        World.Environment env;
+                        try {
+                            env = World.Environment.valueOf(potentialEnvironmentType.toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            sender.sendMessage(DimensifyConstants.INVALID_ENVIRONMENT_TYPE.replace("<TYPE>", potentialEnvironmentType));
+                            return;
+                        }
+
+                        creator.environment(env);
+                    } else if (meta.toLowerCase().startsWith("seed=")) {
+                        String[] split = meta.split("seed=");
+
+                        if (split.length != 2) {
+                            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.SEED_NOT_PROVIDED));
+                            return;
+                        }
+
+                        creator.seed(Long.valueOf(split[1]));
+                    }
+                }
+
                 Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
@@ -83,7 +121,7 @@ public class DimensifyCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_DELETE));
                     return;
                 }
-                String worldName = String.join("_", ArgumentUtil.getRemainingArgs(1, args));
+                String worldName = args[1];
                 // Make sure the world exists
                 if (Bukkit.getWorld(worldName) == null && plugin.get().getWorldNames().contains(worldName)) {
                     // Load the world
