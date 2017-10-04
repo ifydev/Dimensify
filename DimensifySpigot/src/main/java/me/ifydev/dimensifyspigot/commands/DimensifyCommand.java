@@ -4,14 +4,14 @@ import me.ifydev.dimensify.api.DimensifyConstants;
 import me.ifydev.dimensify.api.util.ArgumentUtil;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
+import me.ifydev.dimensifyspigot.world.DimensifyWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.util.Optional;
 
@@ -38,7 +38,16 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 String dimensionType = args[1];
-                String worldName = String.join("_", ArgumentUtil.getRemainingArgs(2, args));
+                WorldType type = WorldType.getByName(dimensionType);
+                if (type == null) {
+                    // Invalid dimension type
+                    sender.sendMessage(DimensifyConstants.INVALID_DIMENSION_TYPE.replace("<TYPE>", dimensionType));
+                    return;
+                }
+
+                String worldName = args[2];
+                // Remaining arguments are referred to as meta.
+                String[] metas = ArgumentUtil.getRemainingArgs(2, args);
 
                 // Ensure a world with that name doesn't exist already
                 if (Bukkit.getWorld(worldName) != null) {
@@ -46,8 +55,45 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD));
-                WorldCreator creator = new WorldCreator(worldName);
-                plugin.get().getWorldController().loadWorld(creator, plugin.get());
+                DimensifyWorld creator = new DimensifyWorld(worldName, plugin.get());
+                creator.type(type);
+                creator.generateStructures(false);
+
+                for (String meta : metas) {
+                    // Check the metas that are present. Set attributes on the world creator if we care about any of them.
+
+                    if (meta.equalsIgnoreCase("structure")) creator.generateStructures(true);
+                    else if (meta.toLowerCase().startsWith("env=")) {
+                        String[] split = meta.split("env=");
+
+                        if (split.length != 2) {
+                            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.ENV_NOT_PROVIDED));
+                            return;
+                        }
+
+                        String potentialEnvironmentType = split[1];
+                        World.Environment env;
+                        try {
+                            env = World.Environment.valueOf(potentialEnvironmentType.toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            sender.sendMessage(DimensifyConstants.INVALID_ENVIRONMENT_TYPE.replace("<TYPE>", potentialEnvironmentType));
+                            return;
+                        }
+
+                        creator.environment(env);
+                    } else if (meta.toLowerCase().startsWith("seed=")) {
+                        String[] split = meta.split("seed=");
+
+                        if (split.length != 2) {
+                            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.SEED_NOT_PROVIDED));
+                            return;
+                        }
+
+                        creator.seed(Long.valueOf(split[1]));
+                    }
+                }
+
+                Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_ARENT_A_PLAYER));
@@ -75,11 +121,11 @@ public class DimensifyCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_DELETE));
                     return;
                 }
-                String worldName = String.join("_", ArgumentUtil.getRemainingArgs(1, args));
+                String worldName = args[1];
                 // Make sure the world exists
                 if (Bukkit.getWorld(worldName) == null && plugin.get().getWorldNames().contains(worldName)) {
                     // Load the world
-                    plugin.get().getWorldController().loadWorld(new WorldCreator(worldName), plugin.get());
+                    plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get());
                 } else if (Bukkit.getWorld(worldName) == null) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;

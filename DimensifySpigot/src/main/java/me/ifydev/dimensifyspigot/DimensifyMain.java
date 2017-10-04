@@ -27,7 +27,7 @@ package me.ifydev.dimensifyspigot;
 import lombok.Getter;
 import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
-import me.ifydev.dimensifyspigot.controller.WorldController;
+import me.ifydev.dimensifyspigot.world.WorldController;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -108,7 +108,9 @@ public class DimensifyMain extends JavaPlugin {
     }
 
     public void addWorld(String name) {
+        if (allWorlds.contains(name)) return;
         worldNames.add(name);
+        allWorlds.add(name);
         getConfig().set("worlds", worldNames);
         saveConfig();
     }

@@ -29,21 +29,25 @@ package me.ifydev.dimensify.api;
  * @since 10/1/2017
  */
 public class DimensifyConstants {
-    public static final String DIMENSIFY_PREFIX = "&a&lDimensify> ";
+    private static final String DIMENSIFY_PREFIX = "&a&lDimensify> ";
 
     public static final String YOU_ARENT_A_PLAYER = DIMENSIFY_PREFIX + "You must be a player for this command!";
 
     // Not enough arguments responses
-    public static final String NOT_ENOUGH_ARGUMENTS_BASE = DIMENSIFY_PREFIX + "&c&lNot enough arguments: ";
+    private static final String NOT_ENOUGH_ARGUMENTS_BASE = DIMENSIFY_PREFIX + "&c&lNot enough arguments: ";
     public static final String NOT_ENOUGH_ARGUMENTS_CREATE_WORLD = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify create [dimension_type] [world_name]";
     public static final String NOT_ENOUGH_ARGUMENTS_SEND_PLAYER = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify send [player] [world_name]";
     public static final String NOT_ENOUGH_ARGUMENTS_GO = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify go [world_name]";
     public static final String NOT_ENOUGH_ARGUMENTS_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify delete [world_name]";
 
     // General errors
-    public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "Unable to continue: Plugin not present!";
-    public static final String WORLD_EXISTS = DIMENSIFY_PREFIX + "World '<WORLD>' already exists!";
-    public static final String INVALID_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' doesn't exist.";
+    public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Plugin not present!";
+    public static final String WORLD_EXISTS = DIMENSIFY_PREFIX + "&c&lWorld '<WORLD>' already exists!";
+    public static final String INVALID_WORLD = DIMENSIFY_PREFIX + "&c&lWorld '<WORLD>' doesn't exist.";
+    public static final String INVALID_DIMENSION_TYPE = DIMENSIFY_PREFIX + "&c&lDimension type '<TYPE>' is invalid.";
+    public static final String INVALID_ENVIRONMENT_TYPE = DIMENSIFY_PREFIX + "&c&lEnvironment type '<TYPE>' is invalid.";
+    public static final String SEED_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lSeed has no value.";
+    public static final String ENV_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lEnv has no value.";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
