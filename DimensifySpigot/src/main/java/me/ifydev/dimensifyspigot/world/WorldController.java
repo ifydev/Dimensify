@@ -1,5 +1,6 @@
 package me.ifydev.dimensifyspigot.world;
 
+import me.ifydev.dimensify.api.DimensifyCallback;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
@@ -7,7 +8,9 @@ import org.bukkit.World;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Innectic
@@ -16,12 +19,17 @@ import java.util.List;
 public class WorldController {
 
     public void loadAllWorlds(List<String> worldNames,  DimensifyMain plugin) {
-        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin), plugin));
+        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin), plugin, callback));
     }
 
-    public void loadWorld(DimensifyWorld creator, DimensifyMain plugin) {
+    public void loadWorld(DimensifyWorld creator, DimensifyMain plugin, DimensifyCallback callback) {
         creator.createWorld();
         plugin.getWorldNames().add(creator.name());
+
+        Map<String, String> meta = new HashMap<>();
+        meta.put("world", creator.name());
+
+        callback.success(meta);
     }
 
     public boolean deleteWorld(String worldName) {

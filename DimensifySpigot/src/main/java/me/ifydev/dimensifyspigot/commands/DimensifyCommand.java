@@ -93,7 +93,8 @@ public class DimensifyCommand implements CommandExecutor {
                     }
                 }
 
-                Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
+                Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get(),
+                        DimensifyConstants.WORLD_SUCCESS_CALLBACK));
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_ARENT_A_PLAYER));
@@ -106,7 +107,7 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 String worldName = args[1];
-                if (Bukkit.getWorld(worldName) == null && !plugin.get().getWorldNames().contains(worldName)) {
+                if (Bukkit.getWorld(worldName) == null && !plugin.get().getAllWorlds().contains(worldName)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;
                 }
@@ -123,9 +124,10 @@ public class DimensifyCommand implements CommandExecutor {
                 }
                 String worldName = args[1];
                 // Make sure the world exists
-                if (Bukkit.getWorld(worldName) == null && plugin.get().getWorldNames().contains(worldName)) {
+                if (Bukkit.getWorld(worldName) == null && plugin.get().getAllWorlds().contains(worldName)) {
                     // Load the world
-                    plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get());
+                    plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get(),
+                            DimensifyConstants.WORLD_SUCCESS_CALLBACK);
                 } else if (Bukkit.getWorld(worldName) == null) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;
@@ -136,8 +138,42 @@ public class DimensifyCommand implements CommandExecutor {
                 response = response.replace("<WORLD>", worldName);
                 sender.sendMessage(ColorUtil.makeReadable(response));
                 return;
+            } else if (args[0].equalsIgnoreCase("send")) {
+                if (args.length < 2) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_SEND_PLAYER));
+                    return;
+                }
+
+                Player player = Bukkit.getPlayer(args[1]);
+                if (player == null || !player.isOnline()) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_PLAYER.replace("<PLAYER>", args[1])));
+                    return;
+                }
+
+                if (Bukkit.getWorld(args[2]) == null && !plugin.get().getAllWorlds().contains(args[2])) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", args[2])));
+                    return;
+                }
+
+                Bukkit.getScheduler().runTask(plugin.get(), () -> {
+                    if (!plugin.get().getWorldNames().contains(args[2])) {
+                        // Load the world, since it's not here
+                        plugin.get().getWorldController().loadWorld(new DimensifyWorld(args[2], plugin.get()), plugin.get(),
+                                DimensifyConstants.WORLD_SUCCESS_CALLBACK);
+                    }
+
+                    World world = Bukkit.getWorld(args[2]);
+                    player.teleport(world.getSpawnLocation());
+
+                    player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_HAVE_BEEN_SENT.replace("<WORLD>", args[2])));
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PLAYER_HAS_BEEN_SENT.replace("<PLAYER>", args[1]).replace("<WORLD>", args[2])));
+                });
+                return;
             }
-            // TODO: send help to the player here
+            // Send help
+            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_HEADER));
+            DimensifyConstants.HELP_RESPONSE.forEach(section -> section.stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage));
+            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_FOOTER));
         });
 
         return false;

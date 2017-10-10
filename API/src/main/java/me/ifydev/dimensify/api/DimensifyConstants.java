@@ -24,6 +24,10 @@
  */
 package me.ifydev.dimensify.api;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author Innectic
  * @since 10/1/2017
@@ -48,10 +52,32 @@ public class DimensifyConstants {
     public static final String INVALID_ENVIRONMENT_TYPE = DIMENSIFY_PREFIX + "&c&lEnvironment type '<TYPE>' is invalid.";
     public static final String SEED_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lSeed has no value.";
     public static final String ENV_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lEnv has no value.";
+    public static final String INVALID_PLAYER = DIMENSIFY_PREFIX + "&c&lInvalid player: <PLAYER>";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
     public static final String WORLD_CREATED = DIMENSIFY_PREFIX + "World '<WORLD>' created.";
     public static final String WHOOSH = DIMENSIFY_PREFIX + "Whoosh!";
     public static final String WORLD_DELETED = DIMENSIFY_PREFIX + "World '<WORLD>' has been deleted.";
+    public static final String YOU_HAVE_BEEN_SENT = DIMENSIFY_PREFIX + "You have been sent to <WORLD>!";
+    public static final String PLAYER_HAS_BEEN_SENT = DIMENSIFY_PREFIX + "<PLAYER> has been sent to <WORLD>.";
+
+    // Basic callbacks
+    public static final DimensifyCallback WORLD_SUCCESS_CALLBACK = (Map<String, String> meta) ->
+            System.out.println("World '" + meta.getOrDefault("world", "unknown") + "' has been loaded!");
+
+    // Help response
+    // TODO: This should automatically paginate.
+    public static final String DIMENSIFY_HELP_HEADER = "&e================== &a&lDimensify  Help &e==================";
+    public static final String DIMENSIFY_HELP_FOOTER = "&e=====================================================";
+    public static final List<List<String>> HELP_RESPONSE = Arrays.asList(
+            Arrays.asList(
+                    "&a&l/dimensify create [dimension_type] [world_name]",
+                    "&a&l/dimensify send [player] [world_name]",
+                    "&a&l/dimensify go [world_name]",
+                    "&a&l/dimensify delete [world_name]",
+                    "&a&l/dimensify default [world_name?]",
+                    "&a&l/dimensify list"
+            )
+    );
 }
