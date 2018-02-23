@@ -54,7 +54,7 @@ public class DimensifyCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_EXISTS.replace("<WORLD>", worldName)));
                     return;
                 }
-                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD));
+                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD.replace("<WORLD>", worldName)));
                 DimensifyWorld creator = new DimensifyWorld(worldName, plugin.get());
                 creator.type(type);
                 creator.generateStructures(false);
