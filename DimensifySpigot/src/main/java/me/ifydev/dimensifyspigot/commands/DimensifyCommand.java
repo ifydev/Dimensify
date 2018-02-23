@@ -93,8 +93,7 @@ public class DimensifyCommand implements CommandExecutor {
                     }
                 }
 
-                Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get(),
-                        DimensifyConstants.WORLD_SUCCESS_CALLBACK));
+                Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_ARENT_A_PLAYER));
@@ -126,8 +125,7 @@ public class DimensifyCommand implements CommandExecutor {
                 // Make sure the world exists
                 if (Bukkit.getWorld(worldName) == null && plugin.get().getAllWorlds().contains(worldName)) {
                     // Load the world
-                    plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get(),
-                            DimensifyConstants.WORLD_SUCCESS_CALLBACK);
+                    plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get());
                 } else if (Bukkit.getWorld(worldName) == null) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;
@@ -158,8 +156,7 @@ public class DimensifyCommand implements CommandExecutor {
                 Bukkit.getScheduler().runTask(plugin.get(), () -> {
                     if (!plugin.get().getWorldNames().contains(args[2])) {
                         // Load the world, since it's not here
-                        plugin.get().getWorldController().loadWorld(new DimensifyWorld(args[2], plugin.get()), plugin.get(),
-                                DimensifyConstants.WORLD_SUCCESS_CALLBACK);
+                        plugin.get().getWorldController().loadWorld(new DimensifyWorld(args[2], plugin.get()), plugin.get());
                     }
 
                     World world = Bukkit.getWorld(args[2]);

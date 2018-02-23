@@ -26,7 +26,6 @@ package me.ifydev.dimensify.api;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Innectic
@@ -63,8 +62,8 @@ public class DimensifyConstants {
     public static final String PLAYER_HAS_BEEN_SENT = DIMENSIFY_PREFIX + "<PLAYER> has been sent to <WORLD>.";
 
     // Basic callbacks
-    public static final DimensifyCallback WORLD_SUCCESS_CALLBACK = (Map<String, String> meta) ->
-            System.out.println("World '" + meta.getOrDefault("world", "unknown") + "' has been loaded!");
+//    public static final DimensifyCallback WORLD_SUCCESS_CALLBACK = (Map<String, String> meta) ->
+//            System.out.println("World '" + meta.getOrDefault("world", "unknown") + "' has been loaded!");
 
     // Help response
     // TODO: This should automatically paginate.
