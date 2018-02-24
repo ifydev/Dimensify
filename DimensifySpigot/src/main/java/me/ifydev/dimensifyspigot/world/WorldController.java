@@ -7,9 +7,7 @@ import org.bukkit.World;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Innectic
@@ -18,17 +16,22 @@ import java.util.Map;
 public class WorldController {
 
     public void loadAllWorlds(List<String> worldNames,  DimensifyMain plugin) {
-        worldNames.forEach(name -> {
-            loadWorld(new DimensifyWorld(name, plugin), plugin);
-        });
+        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin), plugin));
     }
 
     public void loadWorld(DimensifyWorld creator, DimensifyMain plugin) {
-        creator.createWorld();
+        World world;
+        try {
+            world = creator.createWorld();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        if (world == null) {
+            System.out.println("World was null after generation.");
+            return;
+        }
         plugin.getWorldNames().add(creator.name());
-
-        Map<String, String> meta = new HashMap<>();
-        meta.put("world", creator.name());
     }
 
     public boolean deleteWorld(String worldName) {

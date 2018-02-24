@@ -94,6 +94,8 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
+                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
+                return;
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_ARENT_A_PLAYER));
@@ -116,6 +118,7 @@ public class DimensifyCommand implements CommandExecutor {
                     ((Player) sender).teleport(world.getSpawnLocation());
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WHOOSH));
                 });
+                return;
             } else if (args[0].equalsIgnoreCase("delete")) {
                 if (args.length < 2) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_DELETE));
@@ -123,18 +126,21 @@ public class DimensifyCommand implements CommandExecutor {
                 }
                 String worldName = args[1];
                 // Make sure the world exists
-                if (Bukkit.getWorld(worldName) == null && plugin.get().getAllWorlds().contains(worldName)) {
-                    // Load the world
-                    plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get());
-                } else if (Bukkit.getWorld(worldName) == null) {
-                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
-                    return;
-                }
-                // World exists, delete it
-                boolean deleted = plugin.get().getWorldController().deleteWorld(worldName);
-                String response = deleted ? DimensifyConstants.WORLD_DELETED : DimensifyConstants.INVALID_WORLD;
-                response = response.replace("<WORLD>", worldName);
-                sender.sendMessage(ColorUtil.makeReadable(response));
+                Bukkit.getScheduler().runTask(plugin.get(), () -> {
+                    if (Bukkit.getWorld(worldName) == null && plugin.get().getAllWorlds().contains(worldName)) {
+                        // Load the world
+                        plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get());
+                    } else if (Bukkit.getWorld(worldName) == null) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
+                        return;
+                    }
+                    // World exists, delete it
+                    boolean deleted = plugin.get().getWorldController().deleteWorld(worldName);
+                    String response = deleted ? DimensifyConstants.WORLD_DELETED : DimensifyConstants.INVALID_WORLD;
+                    response = response.replace("<WORLD>", worldName);
+                    sender.sendMessage(ColorUtil.makeReadable(response));
+                });
+
                 return;
             } else if (args[0].equalsIgnoreCase("send")) {
                 if (args.length < 2) {
@@ -165,6 +171,10 @@ public class DimensifyCommand implements CommandExecutor {
                     player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_HAVE_BEEN_SENT.replace("<WORLD>", args[2])));
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PLAYER_HAS_BEEN_SENT.replace("<PLAYER>", args[1]).replace("<WORLD>", args[2])));
                 });
+                return;
+            } else if (args[0].equalsIgnoreCase("list")) {
+                // List the current worlds.
+                // TODO
                 return;
             }
             // Send help
