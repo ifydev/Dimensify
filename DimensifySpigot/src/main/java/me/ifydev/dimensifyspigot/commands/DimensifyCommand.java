@@ -30,6 +30,13 @@ public class DimensifyCommand implements CommandExecutor {
         }
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin.get(), () -> {
+            if (args.length < 1) {
+                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_HEADER));
+                DimensifyConstants.HELP_RESPONSE.forEach(messages ->
+                        messages.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message))));
+                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_FOOTER));
+                return;
+            }
             if (args[0].equalsIgnoreCase("create")) {
                 // Make sure there's enough arguments here
                 if (args.length < 3) {
@@ -41,7 +48,7 @@ public class DimensifyCommand implements CommandExecutor {
                 WorldType type = WorldType.getByName(dimensionType);
                 if (type == null) {
                     // Invalid dimension type
-                    sender.sendMessage(DimensifyConstants.INVALID_DIMENSION_TYPE.replace("<TYPE>", dimensionType));
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_DIMENSION_TYPE.replace("<TYPE>", dimensionType)));
                     return;
                 }
 
@@ -61,7 +68,6 @@ public class DimensifyCommand implements CommandExecutor {
 
                 for (String meta : metas) {
                     // Check the metas that are present. Set attributes on the world creator if we care about any of them.
-
                     if (meta.equalsIgnoreCase("structure")) creator.generateStructures(true);
                     else if (meta.toLowerCase().startsWith("env=")) {
                         String[] split = meta.split("env=");

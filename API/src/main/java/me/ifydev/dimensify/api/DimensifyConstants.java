@@ -67,15 +67,15 @@ public class DimensifyConstants {
 
     // Help response
     // TODO: This should automatically paginate.
-    public static final String DIMENSIFY_HELP_HEADER = "&e================== &a&lDimensify  Help &e==================";
+    public static final String DIMENSIFY_HELP_HEADER = "&e=================== &a&lDimensify  Help &e===================";
     public static final String DIMENSIFY_HELP_FOOTER = "&e=====================================================";
     public static final List<List<String>> HELP_RESPONSE = Arrays.asList(
             Arrays.asList(
-                    "&a&l/dimensify create [dimension_type] [world_name]",
-                    "&a&l/dimensify send [player] [world_name]",
-                    "&a&l/dimensify go [world_name]",
-                    "&a&l/dimensify delete [world_name]",
-                    "&a&l/dimensify default [world_name?]",
+                    "&a&l/dimensify create <dimension_type> <world_name>",
+                    "&a&l/dimensify send <player> <world_name>",
+                    "&a&l/dimensify go <world_name>",
+                    "&a&l/dimensify delete <world_name>",
+                    "&a&l/dimensify default [world_name]",
                     "&a&l/dimensify list"
             )
     );
