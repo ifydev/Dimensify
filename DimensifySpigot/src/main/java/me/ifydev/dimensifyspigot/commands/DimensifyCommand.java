@@ -1,6 +1,8 @@
 package me.ifydev.dimensifyspigot.commands;
 
 import me.ifydev.dimensify.api.DimensifyConstants;
+import me.ifydev.dimensify.api.meta.MetaParser;
+import me.ifydev.dimensify.api.meta.WorldMeta;
 import me.ifydev.dimensify.api.util.ArgumentUtil;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
@@ -63,41 +65,34 @@ public class DimensifyCommand implements CommandExecutor {
                 }
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD.replace("<WORLD>", worldName)));
                 DimensifyWorld creator = new DimensifyWorld(worldName, plugin.get());
-                creator.type(type);
-                creator.generateStructures(false);
-
-                for (String meta : metas) {
-                    // Check the metas that are present. Set attributes on the world creator if we care about any of them.
-                    if (meta.equalsIgnoreCase("structure")) creator.generateStructures(true);
-                    else if (meta.toLowerCase().startsWith("env=")) {
-                        String[] split = meta.split("env=");
-
-                        if (split.length != 2) {
-                            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.ENV_NOT_PROVIDED));
-                            return;
-                        }
-
-                        String potentialEnvironmentType = split[1];
-                        World.Environment env;
-                        try {
-                            env = World.Environment.valueOf(potentialEnvironmentType.toUpperCase());
-                        } catch (IllegalArgumentException e) {
-                            sender.sendMessage(DimensifyConstants.INVALID_ENVIRONMENT_TYPE.replace("<TYPE>", potentialEnvironmentType));
-                            return;
-                        }
-
-                        creator.environment(env);
-                    } else if (meta.toLowerCase().startsWith("seed=")) {
-                        String[] split = meta.split("seed=");
-
-                        if (split.length != 2) {
-                            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.SEED_NOT_PROVIDED));
-                            return;
-                        }
-
-                        creator.seed(Long.valueOf(split[1]));
-                    }
+                MetaParser.MetaResult result = MetaParser.parse(metas);
+                if (result.getError().isPresent()) {
+                    sender.sendMessage(ColorUtil.makeReadable(result.getError().get()));
+                    return;
                 }
+
+                if (!result.getMeta().isPresent()) {
+                    // TODO: Make this error not suck
+                    sender.sendMessage("A really bad internal error happened. Please report this with the command you used.");
+                    return;
+                }
+                WorldMeta meta = result.getMeta().get();
+
+                creator.type(type);
+                creator.generateStructures(meta.isStructures());
+
+                meta.getEnvironment().ifPresent(env -> {
+                    World.Environment environment;
+                    try {
+                        environment = World.Environment.valueOf(env.toUpperCase());
+                        creator.environment(environment);
+                    } catch (IllegalArgumentException e) {
+                        sender.sendMessage(DimensifyConstants.INVALID_ENVIRONMENT_TYPE.replace("<TYPE>", env));
+                        return;
+                    }
+                });
+
+                meta.getSeed().ifPresent(seed -> creator.seed(Long.valueOf(seed)));
 
                 Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
