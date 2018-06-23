@@ -27,6 +27,7 @@ package me.ifydev.dimensifyspigot;
 import lombok.Getter;
 import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
+import me.ifydev.dimensifyspigot.commands.Test;
 import me.ifydev.dimensifyspigot.world.WorldController;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import org.bukkit.plugin.PluginManager;
@@ -86,6 +87,7 @@ public class DimensifyMain extends JavaPlugin {
 
     private void registerCommands() {
         getCommand("dimensify").setExecutor(new DimensifyCommand());
+        getCommand("test").setExecutor(new Test());
     }
 
     private void createConfig() {

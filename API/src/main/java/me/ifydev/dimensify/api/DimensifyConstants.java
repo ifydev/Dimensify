@@ -52,6 +52,7 @@ public class DimensifyConstants {
     public static final String SEED_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lSeed has no value.";
     public static final String ENV_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lEnv has no value.";
     public static final String INVALID_PLAYER = DIMENSIFY_PREFIX + "&c&lInvalid player: <PLAYER>";
+    public static final String INTERNAL_ERROR = DIMENSIFY_PREFIX + "&c&lAn internal error has occurred. Please check your console for more details";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";

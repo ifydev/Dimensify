@@ -72,8 +72,10 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 if (!result.getMeta().isPresent()) {
-                    // TODO: Make this error not suck
-                    sender.sendMessage("A really bad internal error happened. Please report this with the command you used.");
+                    // if our meta isn't present, AND there wasn't an error to provide, then something's really
+                    // messed up.
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INTERNAL_ERROR));
+                    plugin.get().getLogger().severe("Meta was not present after parsing meta information.");
                     return;
                 }
                 WorldMeta meta = result.getMeta().get();
@@ -95,6 +97,7 @@ public class DimensifyCommand implements CommandExecutor {
                 meta.getSeed().ifPresent(seed -> creator.seed(Long.valueOf(seed)));
 
                 Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
+                plugin.get().getLogger().info("Finished generating world '" + worldName + "'!");
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
                 return;
             } else if (args[0].equalsIgnoreCase("go")) {

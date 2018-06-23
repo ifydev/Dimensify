@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class WorldController {
 
-    public void loadAllWorlds(List<String> worldNames,  DimensifyMain plugin) {
+    public void loadAllWorlds(List<String> worldNames, DimensifyMain plugin) {
         worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin), plugin));
     }
 
@@ -31,6 +31,7 @@ public class WorldController {
             System.out.println("World was null after generation.");
             return;
         }
+        DimensifyMain.get().ifPresent(main -> main.getLogger().info("Finished generating " + world.getName() + "!"));
         plugin.getWorldNames().add(creator.name());
     }
 
