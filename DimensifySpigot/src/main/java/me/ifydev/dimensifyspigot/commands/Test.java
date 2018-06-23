@@ -1,6 +1,7 @@
 package me.ifydev.dimensifyspigot.commands;
 
 import me.ifydev.dimensifyspigot.DimensifyMain;
+import me.ifydev.dimensifyspigot.portal.PortalType;
 import me.ifydev.dimensifyspigot.portal.algo.PortalCornerDetection;
 import me.ifydev.dimensifyspigot.portal.PortalCorners;
 import org.bukkit.command.Command;
@@ -25,7 +26,7 @@ public class Test implements CommandExecutor {
             return false;
         }
 
-        DimensifyMain.get().get().getPortalRegistry().setPortal(args[0], corners.get());
+        DimensifyMain.get().get().getPortalRegistry().setPortal(args[0], PortalType.NETHER, corners.get());
         return true;
     }
 }

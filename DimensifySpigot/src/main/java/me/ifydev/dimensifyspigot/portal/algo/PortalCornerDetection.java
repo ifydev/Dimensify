@@ -18,7 +18,7 @@ public class PortalCornerDetection {
 
     public static Optional<PortalCorners> findPortalCornersFromAnyCorner(Player player, Location starting) {
         final int MAX_HEIGHT = starting.getWorld().getMaxHeight();
-        final int MAX_DISTANCE = 23;
+        final int MAX_DISTANCE = 128;
 
         DirectionUtil.CardinalDirection direction = DirectionUtil.getDirection(player);
 
@@ -66,7 +66,7 @@ public class PortalCornerDetection {
         // Now we just need to find the opposing corner.
         distanceMoved = 0;
         do {
-            if (distanceMoved >= 23) {
+            if (distanceMoved >= MAX_DISTANCE) {
                 current = null;
                 break;
             }
