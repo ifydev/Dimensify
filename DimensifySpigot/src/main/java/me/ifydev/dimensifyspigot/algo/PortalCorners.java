@@ -11,9 +11,6 @@ import org.bukkit.Location;
 @AllArgsConstructor
 @Getter
 public class PortalCorners {
-
-    private Location topLeft;
-    private Location topRight;
-    private Location bottomLeft;
-    private Location bottomRight;
+    private Location first;
+    private Location second;
 }
