@@ -1,4 +1,4 @@
-package me.ifydev.dimensifyspigot.algo;
+package me.ifydev.dimensifyspigot.portal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

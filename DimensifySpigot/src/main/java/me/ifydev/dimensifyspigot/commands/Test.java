@@ -1,8 +1,8 @@
 package me.ifydev.dimensifyspigot.commands;
 
 import me.ifydev.dimensifyspigot.DimensifyMain;
-import me.ifydev.dimensifyspigot.algo.PortalCornerDetection;
-import me.ifydev.dimensifyspigot.algo.PortalCorners;
+import me.ifydev.dimensifyspigot.portal.algo.PortalCornerDetection;
+import me.ifydev.dimensifyspigot.portal.PortalCorners;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,6 +15,7 @@ import java.util.Optional;
  * @since 06/22/2018
  */
 public class Test implements CommandExecutor {
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = (Player) sender;
@@ -24,7 +25,7 @@ public class Test implements CommandExecutor {
             return false;
         }
 
-        DimensifyMain.get().get().getCornerRegistry().addCorner(corners.get());
+        DimensifyMain.get().get().getPortalRegistry().setPortal(args[0], corners.get());
         return true;
     }
 }

@@ -44,7 +44,7 @@ public class DimensifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify delete [world_name]";
 
     // General errors
-    public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Plugin not present!";
+    public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Plugin not present?!";
     public static final String WORLD_EXISTS = DIMENSIFY_PREFIX + "&c&lWorld '<WORLD>' already exists!";
     public static final String INVALID_WORLD = DIMENSIFY_PREFIX + "&c&lWorld '<WORLD>' doesn't exist.";
     public static final String INVALID_DIMENSION_TYPE = DIMENSIFY_PREFIX + "&c&lDimension type '<TYPE>' is invalid.";
@@ -62,14 +62,10 @@ public class DimensifyConstants {
     public static final String YOU_HAVE_BEEN_SENT = DIMENSIFY_PREFIX + "You have been sent to <WORLD>!";
     public static final String PLAYER_HAS_BEEN_SENT = DIMENSIFY_PREFIX + "<PLAYER> has been sent to <WORLD>.";
 
-    // Basic callbacks
-//    public static final DimensifyCallback WORLD_SUCCESS_CALLBACK = (Map<String, String> meta) ->
-//            System.out.println("World '" + meta.getOrDefault("world", "unknown") + "' has been loaded!");
-
     // Help response
     // TODO: This should automatically paginate.
     public static final String DIMENSIFY_HELP_HEADER = "&e=================== &a&lDimensify  Help &e===================";
-    public static final String DIMENSIFY_HELP_FOOTER = "&e=====================================================";
+    public static final String DIMENSIFY_HELP_FOOTER = "&e=======================================================";
     public static final List<List<String>> HELP_RESPONSE = Arrays.asList(
             Arrays.asList(
                     "&a&l/dimensify create <dimension_type> <world_name>",

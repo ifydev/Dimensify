@@ -29,7 +29,7 @@ import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
 import me.ifydev.dimensifyspigot.commands.Test;
 import me.ifydev.dimensifyspigot.events.PlayerPortal;
-import me.ifydev.dimensifyspigot.util.CornerRegistry;
+import me.ifydev.dimensifyspigot.portal.PortalRegistry;
 import me.ifydev.dimensifyspigot.world.WorldController;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import org.bukkit.plugin.PluginManager;
@@ -53,7 +53,7 @@ public class DimensifyMain extends JavaPlugin {
     @Getter private List<String> allWorlds;
 
     @Getter private WorldController worldController;
-    @Getter private CornerRegistry cornerRegistry;
+    @Getter private PortalRegistry portalRegistry;
 
     @Override
     public void onEnable() {
@@ -63,7 +63,7 @@ public class DimensifyMain extends JavaPlugin {
         getLogger().info("Done!");
 
         worldController = new WorldController();
-        cornerRegistry = new CornerRegistry();
+        portalRegistry = new PortalRegistry();
 
         createConfig();
 

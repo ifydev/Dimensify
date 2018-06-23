@@ -1,26 +1,43 @@
-package me.ifydev.dimensifyspigot.util;
+package me.ifydev.dimensifyspigot.portal;
 
-import me.ifydev.dimensifyspigot.algo.PortalCorners;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.bukkit.Location;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Innectic
  * @since 06/22/2018
  */
-public class CornerRegistry {
+public class PortalRegistry {
 
-    private List<PortalCorners> corners = new ArrayList<>();
+    @Getter
+    @AllArgsConstructor
+    private class PortalMeta {
+        private PortalType type;
+        private PortalCorners corners;
+    }
 
-    public void addCorner(PortalCorners corner) {
-        corners.add(corner);
+    private Map<String, PortalMeta> portalCorners = new HashMap<>();
+
+    public void setPortal(String name, PortalType type, PortalCorners corners) {
+        portalCorners.put(name, new PortalMeta(type, corners));
+    }
+
+    public void removePortal(String name) {
+        portalCorners.remove(name);
+    }
+
+    public boolean isPortalNameUsed(String name) {
+        return portalCorners.containsKey(name);
     }
 
     public Optional<PortalCorners> findCornersFromPosition(Location location) {
-        for (PortalCorners corner : corners) {
+        for (PortalCorners corner : portalCorners.values().stream().map(PortalMeta::getCorners).collect(Collectors.toList())) {
             Location bottom;
             Location top;
 

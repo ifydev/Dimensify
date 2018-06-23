@@ -1,5 +1,6 @@
-package me.ifydev.dimensifyspigot.algo;
+package me.ifydev.dimensifyspigot.portal.algo;
 
+import me.ifydev.dimensifyspigot.portal.PortalCorners;
 import me.ifydev.dimensifyspigot.util.DirectionUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -34,11 +35,8 @@ public class PortalCornerDetection {
         if (portalDown && portalLeft) {
             isBottom = false;
             isLeft = false;
-        } else if (portalDown && portalRight) {
-            isBottom = false;
-        } else if (portalUp && portalLeft) {
-            isLeft = false;
-        }
+        } else if (portalDown && portalRight) isBottom = false;
+        else if   (portalUp && portalLeft)    isLeft = false;
 
         int distanceMoved = 0;
         Block current = starting.getWorld().getBlockAt(starting);
