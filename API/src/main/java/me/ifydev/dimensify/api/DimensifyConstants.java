@@ -42,6 +42,10 @@ public class DimensifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_SEND_PLAYER = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify send [player] [world_name]";
     public static final String NOT_ENOUGH_ARGUMENTS_GO = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify go [world_name]";
     public static final String NOT_ENOUGH_ARGUMENTS_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify delete [world_name]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify <create|delete|link> [args...]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_LINK = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify link <source_portal> <destination_portal>";
+    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_CREATE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal create <name>";
+    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal delete <name>";
 
     // General errors
     public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Plugin not present?!";
@@ -53,19 +57,25 @@ public class DimensifyConstants {
     public static final String ENV_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lEnv has no value.";
     public static final String INVALID_PLAYER = DIMENSIFY_PREFIX + "&c&lInvalid player: <PLAYER>";
     public static final String INTERNAL_ERROR = DIMENSIFY_PREFIX + "&c&lAn internal error has occurred. Please check your console for more details";
+    public static final String PORTAL_DOES_NOT_EXIST = DIMENSIFY_PREFIX + "&c&lPortal '<PORTAL>' does not exist!";
+    public static final String MUST_LOOK_AT_PORTAL_BLOCKS = DIMENSIFY_PREFIX + "&c&lMust be looking at a portal block.";
+    public static final String INVALID_PORTAL = DIMENSIFY_PREFIX + "&c&lInvalid portal!";
+    public static final String PORTAL_NAME_ALREADY_USED = DIMENSIFY_PREFIX + "Portal name '<NAME>' already used!";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
-    public static final String WORLD_CREATED = DIMENSIFY_PREFIX + "World '<WORLD>' created.";
+    public static final String WORLD_CREATED = DIMENSIFY_PREFIX + "World '<WORLD>' created!";
     public static final String WHOOSH = DIMENSIFY_PREFIX + "Whoosh!";
-    public static final String WORLD_DELETED = DIMENSIFY_PREFIX + "World '<WORLD>' has been deleted.";
+    public static final String WORLD_DELETED = DIMENSIFY_PREFIX + "World '<WORLD>' has been deleted!";
     public static final String YOU_HAVE_BEEN_SENT = DIMENSIFY_PREFIX + "You have been sent to <WORLD>!";
-    public static final String PLAYER_HAS_BEEN_SENT = DIMENSIFY_PREFIX + "<PLAYER> has been sent to <WORLD>.";
+    public static final String PLAYER_HAS_BEEN_SENT = DIMENSIFY_PREFIX + "<PLAYER> has been sent to <WORLD>!";
+    public static final String PORTALS_LINKED = DIMENSIFY_PREFIX + "Portals have been linked!";
+    public static final String PORTAL_CREATED = DIMENSIFY_PREFIX + "Portal '<PORTAL>' created!";
 
     // Help response
     // TODO: This should automatically paginate.
-    public static final String DIMENSIFY_HELP_HEADER = "&e=================== &a&lDimensify  Help &e===================";
-    public static final String DIMENSIFY_HELP_FOOTER = "&e=======================================================";
+    public static final String DIMENSIFY_HELP_HEADER = "&e================== &a&lDimensify  Help &e==================";
+    public static final String DIMENSIFY_HELP_FOOTER = "&e=====================================================";
     public static final List<List<String>> HELP_RESPONSE = Arrays.asList(
             Arrays.asList(
                     "&a&l/dimensify create <dimension_type> <world_name>",
@@ -73,7 +83,8 @@ public class DimensifyConstants {
                     "&a&l/dimensify go <world_name>",
                     "&a&l/dimensify delete <world_name>",
                     "&a&l/dimensify default [world_name]",
-                    "&a&l/dimensify list"
+                    "&a&l/dimensify list",
+                    "&a&l/dimensify link <source_portal> <destination_portal>"
             )
     );
 }

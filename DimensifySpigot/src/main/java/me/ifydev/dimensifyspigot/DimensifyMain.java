@@ -27,11 +27,10 @@ package me.ifydev.dimensifyspigot;
 import lombok.Getter;
 import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
-import me.ifydev.dimensifyspigot.commands.Test;
+import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import me.ifydev.dimensifyspigot.events.PlayerPortal;
 import me.ifydev.dimensifyspigot.portal.PortalRegistry;
 import me.ifydev.dimensifyspigot.world.WorldController;
-import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -65,6 +64,10 @@ public class DimensifyMain extends JavaPlugin {
         worldController = new WorldController();
         portalRegistry = new PortalRegistry();
 
+        getLogger().info("Loading portals...");
+        portalRegistry.load();
+        getLogger().info("Done!");
+
         createConfig();
 
         preloadWorlds = getConfig().getBoolean("preload_worlds", true);
@@ -92,7 +95,6 @@ public class DimensifyMain extends JavaPlugin {
 
     private void registerCommands() {
         getCommand("dimensify").setExecutor(new DimensifyCommand());
-        getCommand("test").setExecutor(new Test());
     }
 
     private void createConfig() {
