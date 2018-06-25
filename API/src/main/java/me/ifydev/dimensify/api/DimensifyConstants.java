@@ -60,7 +60,8 @@ public class DimensifyConstants {
     public static final String PORTAL_DOES_NOT_EXIST = DIMENSIFY_PREFIX + "&c&lPortal '<PORTAL>' does not exist!";
     public static final String MUST_LOOK_AT_PORTAL_BLOCKS = DIMENSIFY_PREFIX + "&c&lMust be looking at a portal block.";
     public static final String INVALID_PORTAL = DIMENSIFY_PREFIX + "&c&lInvalid portal!";
-    public static final String PORTAL_NAME_ALREADY_USED = DIMENSIFY_PREFIX + "Portal name '<NAME>' already used!";
+    public static final String PORTAL_NAME_ALREADY_USED = DIMENSIFY_PREFIX + "&c&lPortal name '<NAME>' already used!";
+    public static final String CANNOT_DELETE_MAIN_WORLD = DIMENSIFY_PREFIX + "&c&lCannot delete the main world!";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";

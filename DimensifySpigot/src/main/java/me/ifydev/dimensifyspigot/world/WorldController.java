@@ -38,6 +38,10 @@ public class WorldController {
     public boolean deleteWorld(String worldName) {
         World world = Bukkit.getWorld(worldName);
         if (world == null) return false;
+        // Teleport all the players from the deleted world, to the main world.
+        // TODO: We probably want to change this to whatever the default world is.
+        world.getPlayers().forEach(player -> player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation()));
+
         File folder = world.getWorldFolder();
         Bukkit.unloadWorld(world, false);
 
