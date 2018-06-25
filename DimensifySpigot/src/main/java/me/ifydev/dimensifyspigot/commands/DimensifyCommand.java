@@ -131,6 +131,11 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
                 String worldName = args[1];
+                if (Bukkit.getWorlds().get(0).getName().equals(worldName)) {
+                    // You can't delete the main world.
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CANNOT_DELETE_MAIN_WORLD));
+                    return;
+                }
                 // Make sure the world exists
                 Bukkit.getScheduler().runTask(plugin.get(), () -> {
                     if (Bukkit.getWorld(worldName) == null && plugin.get().getAllWorlds().contains(worldName)) {
