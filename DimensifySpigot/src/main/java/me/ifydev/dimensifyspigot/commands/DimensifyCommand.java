@@ -5,11 +5,13 @@ import me.ifydev.dimensify.api.meta.MetaParser;
 import me.ifydev.dimensify.api.meta.WorldMeta;
 import me.ifydev.dimensify.api.util.ArgumentUtil;
 import me.ifydev.dimensifyspigot.DimensifyMain;
+import me.ifydev.dimensifyspigot.portal.PortalCorners;
+import me.ifydev.dimensifyspigot.portal.PortalType;
+import me.ifydev.dimensifyspigot.portal.algo.PortalCornerDetection;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
 import me.ifydev.dimensifyspigot.world.DimensifyWorld;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.WorldType;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -72,8 +74,10 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 if (!result.getMeta().isPresent()) {
-                    // TODO: Make this error not suck
-                    sender.sendMessage("A really bad internal error happened. Please report this with the command you used.");
+                    // if our meta isn't present, AND there wasn't an error to provide, then something's really
+                    // messed up.
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INTERNAL_ERROR));
+                    plugin.get().getLogger().severe("Meta was not present after parsing meta information.");
                     return;
                 }
                 WorldMeta meta = result.getMeta().get();
@@ -95,6 +99,7 @@ public class DimensifyCommand implements CommandExecutor {
                 meta.getSeed().ifPresent(seed -> creator.seed(Long.valueOf(seed)));
 
                 Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
+                plugin.get().getLogger().info("Finished generating world '" + worldName + "'!");
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
                 return;
             } else if (args[0].equalsIgnoreCase("go")) {
@@ -173,6 +178,67 @@ public class DimensifyCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PLAYER_HAS_BEEN_SENT.replace("<PLAYER>", args[1]).replace("<WORLD>", args[2])));
                 });
                 return;
+            } else if (args[0].equalsIgnoreCase("portal")) {
+                if (args.length < 2) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_PORTAL));
+                    return;
+                }
+                if (args[1].equalsIgnoreCase("create")) {
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(DimensifyConstants.YOU_ARENT_A_PLAYER);
+                        return;
+                    }
+                    Player player = (Player) sender;
+
+                    if (args.length < 3) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_PORTAL_CREATE));
+                        return;
+                    }
+                    String portalName = args[2];
+                    Block block = player.getTargetBlock(null, 8);
+                    if (block == null || block.getType() != Material.PORTAL) {
+                        player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.MUST_LOOK_AT_PORTAL_BLOCKS));
+                        return;
+                    }
+
+                    // We're just going to assume the user game us a corner of the portal.
+                    Optional<PortalCorners> corners = PortalCornerDetection.findPortalCornersFromAnyCorner(player, block.getLocation());
+                    if (!corners.isPresent()) {
+                        player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_PORTAL));
+                        return;
+                    }
+                    if (plugin.get().getPortalRegistry().isPortalNameUsed(portalName)) {
+                        player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_NAME_ALREADY_USED.replace("<NAME>", portalName)));
+                        return;
+                    }
+                    plugin.get().getPortalRegistry().setPortal(portalName, PortalType.NETHER, corners.get());
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_CREATED.replace("<PORTAL>", portalName)));
+                    return;
+                } else if (args[1].equalsIgnoreCase("delete")) {
+
+                } else if (args[1].equalsIgnoreCase("link")) {
+                    if (args.length < 4) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_PORTAL_LINK));
+                        return;
+                    }
+                    String portalA = args[2];
+                    String world = args[3];
+
+                    // Make sure the portal exists.
+                    if (!plugin.get().getPortalRegistry().isPortalNameUsed(portalA)) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_DOES_NOT_EXIST.replace("<PORTAL>", portalA)));
+                        return;
+                    }
+                    // And make sure the world exists
+                    if (!plugin.get().getWorldNames().contains(world)) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", world)));
+                        return;
+                    }
+
+                    plugin.get().getPortalRegistry().setPortalLink(portalA, world);
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTALS_LINKED));
+                    return;
+                }
             } else if (args[0].equalsIgnoreCase("list")) {
                 // List the current worlds.
                 // TODO

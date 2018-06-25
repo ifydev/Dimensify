@@ -27,8 +27,10 @@ package me.ifydev.dimensifyspigot;
 import lombok.Getter;
 import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
-import me.ifydev.dimensifyspigot.world.WorldController;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
+import me.ifydev.dimensifyspigot.events.PlayerPortal;
+import me.ifydev.dimensifyspigot.portal.PortalRegistry;
+import me.ifydev.dimensifyspigot.world.WorldController;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -50,6 +52,7 @@ public class DimensifyMain extends JavaPlugin {
     @Getter private List<String> allWorlds;
 
     @Getter private WorldController worldController;
+    @Getter private PortalRegistry portalRegistry;
 
     @Override
     public void onEnable() {
@@ -59,6 +62,11 @@ public class DimensifyMain extends JavaPlugin {
         getLogger().info("Done!");
 
         worldController = new WorldController();
+        portalRegistry = new PortalRegistry();
+
+        getLogger().info("Loading portals...");
+        portalRegistry.load();
+        getLogger().info("Done!");
 
         createConfig();
 
@@ -82,6 +90,7 @@ public class DimensifyMain extends JavaPlugin {
         PluginManager manager = getServer().getPluginManager();
 
         manager.registerEvents(new PlayerJoin(), this);
+        manager.registerEvents(new PlayerPortal(), this);
     }
 
     private void registerCommands() {
