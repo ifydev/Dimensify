@@ -85,7 +85,7 @@ public class DimensifyConstants {
                     "&a&l/dimensify delete <world_name>",
                     "&a&l/dimensify default [world_name]",
                     "&a&l/dimensify list",
-                    "&a&l/dimensify link <source_portal> <destination_portal>"
+                    "&a&l/dimensify link <source_portal> <destination_dimension>"
             )
     );
 }

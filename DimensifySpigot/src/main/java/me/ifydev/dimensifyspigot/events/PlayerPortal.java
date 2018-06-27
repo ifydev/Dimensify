@@ -28,9 +28,9 @@ public class PlayerPortal implements Listener {
             e.setCancelled(true);
 
             plugin.get().getPortalRegistry().findCornersFromPosition(player.getLocation()).ifPresent(corners -> {
-                if (!corners.getLink().isPresent()) return;
+                if (!corners.getDestination().isPresent()) return;
 
-                String link = corners.getLink().get();
+                String link = corners.getDestination().get();
                 if (!plugin.get().getWorldNames().contains(link)) {
                     // Load the world, since it's not here
                     plugin.get().getWorldController().loadWorld(new DimensifyWorld(link, plugin.get()), plugin.get());

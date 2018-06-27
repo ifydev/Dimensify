@@ -1,8 +1,6 @@
 package me.ifydev.dimensifyspigot.portal;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import me.ifydev.dimensify.api.portal.PortalType;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,18 +16,10 @@ import java.util.Set;
  */
 public class PortalRegistry {
 
-    @Getter
-    @AllArgsConstructor
-    public class PortalMeta {
-        private PortalType type;
-        private PortalCorners corners;
-        @Setter private Optional<String> link;
-    }
-
-    private Map<String, PortalMeta> portalCorners = new HashMap<>();
+    private Map<String, SpigotPortalMeta> portalCorners = new HashMap<>();
 
     public void setPortalLink(String portal, String world) {
-        portalCorners.get(portal).setLink(Optional.of(world));
+        portalCorners.get(portal).setDestination(Optional.of(world));
 
         Optional<DimensifyMain> plugin = DimensifyMain.get();
         if (!plugin.isPresent()) return;
@@ -49,7 +39,7 @@ public class PortalRegistry {
     }
 
     public void setPortal(String name, PortalType type, PortalCorners corners) {
-        portalCorners.put(name, new PortalMeta(type, corners, Optional.empty()));
+        portalCorners.put(name, new SpigotPortalMeta(corners, type, Optional.empty()));
 
         Optional<DimensifyMain> plugin = DimensifyMain.get();
         if (!plugin.isPresent()) return;
@@ -98,10 +88,10 @@ public class PortalRegistry {
             if (world == null || type == null) return;
 
             System.out.println(key);
-            portalCorners.put(key, new PortalMeta(PortalType.findType(type), new PortalCorners(
+            portalCorners.put(key, new SpigotPortalMeta(new PortalCorners(
                     new Location(Bukkit.getWorld(world), x1, y1, z1),
                     new Location(Bukkit.getWorld(world), x2, y2, z2)
-            ), Optional.ofNullable(plugin.get().getConfig().getString("link." + key, null))));
+            ), PortalType.findType(type), Optional.ofNullable(plugin.get().getConfig().getString("link." + key, null))));
         });
     }
 
@@ -109,13 +99,15 @@ public class PortalRegistry {
         return portalCorners.containsKey(name);
     }
 
-    public Optional<PortalMeta> getPortal(String name) {
+    public Optional<SpigotPortalMeta> getPortal(String name) {
         return Optional.ofNullable(portalCorners.getOrDefault(name, null));
     }
 
-    public Optional<PortalMeta> findCornersFromPosition(Location location) {
-        for (PortalMeta meta : portalCorners.values()) {
-            PortalCorners corner = meta.getCorners();
+    public Optional<SpigotPortalMeta> findCornersFromPosition(Location location) {
+        for (SpigotPortalMeta meta : portalCorners.values()) {
+            Optional<PortalCorners> cornersOptional = meta.getCorners();
+            if (!cornersOptional.isPresent()) continue;
+            PortalCorners corner = cornersOptional.get();
 
             Location bottom;
             Location top;
