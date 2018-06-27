@@ -100,11 +100,15 @@ public class SQLHandler extends AbstractDataHandler {
     @Override
     public void reload() {
         this.drop();
+
+        loadPortals();
+        loadDimensions();
     }
 
     @Override
     public void drop() {
         dimensions = new ArrayList<>();
+        portals = new ArrayList<>();
     }
 
     @Override
