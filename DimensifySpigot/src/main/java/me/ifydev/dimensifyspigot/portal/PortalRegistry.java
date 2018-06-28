@@ -39,7 +39,7 @@ public class PortalRegistry {
     }
 
     public void setPortal(String name, PortalType type, PortalCorners corners) {
-        portalCorners.put(name, new SpigotPortalMeta(corners, type, Optional.empty()));
+        portalCorners.put(name, new SpigotPortalMeta(name, corners, type, Optional.empty()));
 
         Optional<DimensifyMain> plugin = DimensifyMain.get();
         if (!plugin.isPresent()) return;

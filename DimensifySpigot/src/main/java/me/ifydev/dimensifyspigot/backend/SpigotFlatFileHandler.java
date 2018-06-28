@@ -85,6 +85,7 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
         // Make sure this does not exist in the cache already
         Optional<PortalMeta> portal = this.portals.stream().filter(m -> m.getName().equals(meta.getName())).findFirst();
         if (portal.isPresent()) return;
+        this.portals.add(meta);
 
         storage.set("portal." + meta.getName() + "x1", meta.getX1());
         storage.set("portal." + meta.getName() + "y1", meta.getY1());
@@ -156,16 +157,48 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
 
     @Override
     public void createDimension(Dimension dimension) {
+        Optional<Dimension> d = this.dimensions.stream().filter(dim -> dim.getName().equals(dimension.getName())).findFirst();
+        if (d.isPresent()) return;
 
+        String base = "dimensions." + dimension.getName();
+        this.storage.set(base + ".name", dimension.getName());
+        this.storage.set(base + ".type", dimension.getType());
+        this.storage.set(base + ".meta", dimension.getMeta().orElse(""));
+        this.storage.set(base + ".default", dimension.isDefault());
+
+        saveStorage();
     }
 
     @Override
     public void removeDimension(String name) {
+        // Make sure it's cached
+        Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equals(name)).findFirst();
+        if (!dimension.isPresent()) return;
 
+        // Remove from the cache
+        this.dimensions.remove(dimension.get());
+
+        // Remove from file
+        storage.set("dimensions." + name, null);
+        saveStorage();
     }
 
     @Override
     public void loadDimensions() {
+        ConfigurationSection dimensions = storage.getConfigurationSection("dimensions");
 
+        dimensions.getKeys(false).forEach(dimension -> {
+            if (!dimensions.isString(dimension + ".name") || !dimensions.isString(dimension + "type") ||
+                    !dimensions.isString(dimension + "meta") || !dimensions.isBoolean(dimension + "default")) {
+                // This isn't a valid dimension.
+                return;
+            }
+            String name = dimensions.getString(dimension + ".name");
+            String type = dimensions.getString(dimension + ".type");
+            String meta = dimensions.getString(dimension + ".meta", null);
+            boolean isDefault = dimensions.getBoolean(dimension + ".default");
+
+            this.dimensions.add(new Dimension(name, type, Optional.ofNullable(meta), isDefault));
+        });
     }
 }

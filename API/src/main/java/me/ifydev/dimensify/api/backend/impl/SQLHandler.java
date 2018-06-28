@@ -157,24 +157,6 @@ public class SQLHandler extends AbstractDataHandler {
     }
 
     @Override
-    public void loadDimensions() {
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return;
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM dimensions");
-            ResultSet results = statement.executeQuery();
-
-            while (results.next())
-                this.dimensions.add(new Dimension(
-                        results.getString("name"), results.getString("type"),
-                        Optional.ofNullable(results.getString("meta")), results.getBoolean("default")));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
     public void loadPortals() {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) return;
@@ -191,6 +173,24 @@ public class SQLHandler extends AbstractDataHandler {
                         results.getString("world"), Optional.ofNullable(results.getString("destination")),
                         PortalType.findType(results.getString("type"))
                 ));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void loadDimensions() {
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return;
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM dimensions");
+            ResultSet results = statement.executeQuery();
+
+            while (results.next())
+                this.dimensions.add(new Dimension(
+                        results.getString("name"), results.getString("type"),
+                        Optional.ofNullable(results.getString("meta")), results.getBoolean("default")));
         } catch (SQLException e) {
             e.printStackTrace();
         }
