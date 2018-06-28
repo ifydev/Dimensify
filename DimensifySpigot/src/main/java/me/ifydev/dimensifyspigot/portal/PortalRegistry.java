@@ -87,8 +87,7 @@ public class PortalRegistry {
             String type = plugin.get().getConfig().getString("portal." + key + ".type");
             if (world == null || type == null) return;
 
-            System.out.println(key);
-            portalCorners.put(key, new SpigotPortalMeta(new PortalCorners(
+            portalCorners.put(key, new SpigotPortalMeta(key, new PortalCorners(
                     new Location(Bukkit.getWorld(world), x1, y1, z1),
                     new Location(Bukkit.getWorld(world), x2, y2, z2)
             ), PortalType.findType(type), Optional.ofNullable(plugin.get().getConfig().getString("link." + key, null))));

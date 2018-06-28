@@ -26,6 +26,7 @@ package me.ifydev.dimensifyspigot;
 
 import lombok.Getter;
 import me.ifydev.dimensify.api.DimensifyAPI;
+import me.ifydev.dimensifyspigot.backend.SpigotFlatFileHandler;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import me.ifydev.dimensifyspigot.events.PlayerPortal;
@@ -58,7 +59,7 @@ public class DimensifyMain extends JavaPlugin {
     public void onEnable() {
         getLogger().info("Initializing Dimensify API...");
         api = new DimensifyAPI();
-        api.intialize();
+        api.intialize(SpigotFlatFileHandler.class);
         getLogger().info("Done!");
 
         worldController = new WorldController();

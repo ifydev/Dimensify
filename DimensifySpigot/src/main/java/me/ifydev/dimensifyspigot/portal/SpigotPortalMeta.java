@@ -14,14 +14,14 @@ import java.util.Optional;
  */
 public class SpigotPortalMeta extends PortalMeta {
 
-    public SpigotPortalMeta(PortalCorners corners, PortalType type, Optional<String> destination) {
-        super(corners.getFirst().getBlockX(), corners.getFirst().getBlockY(), corners.getFirst().getBlockZ(),
+    public SpigotPortalMeta(String name, PortalCorners corners, PortalType type, Optional<String> destination) {
+        super(name, corners.getFirst().getBlockX(), corners.getFirst().getBlockY(), corners.getFirst().getBlockZ(),
                 corners.getSecond().getBlockX(), corners.getSecond().getBlockY(), corners.getSecond().getBlockZ(),
                 corners.getFirst().getWorld().getName(), destination, type);
     }
 
-    public SpigotPortalMeta(int x1, int x2, int y1, int y2, int z1, int z2, String world, Optional<String> destination, PortalType type) {
-        super(x1, x2, y1, y2, z1, z2, world, destination, type);
+    public SpigotPortalMeta(String name, int x1, int x2, int y1, int y2, int z1, int z2, String world, Optional<String> destination, PortalType type) {
+        super(name, x1, x2, y1, y2, z1, z2, world, destination, type);
     }
 
     public Optional<Location> getFirst() {

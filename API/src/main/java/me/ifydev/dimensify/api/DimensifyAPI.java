@@ -25,6 +25,7 @@
 package me.ifydev.dimensify.api;
 
 import lombok.Getter;
+import me.ifydev.dimensify.api.backend.AbstractDataHandler;
 
 import java.util.Optional;
 
@@ -37,8 +38,11 @@ import java.util.Optional;
 public class DimensifyAPI {
 
     @Getter private Optional<DimensifyAPI> api;
+    @Getter private Class<? extends AbstractDataHandler> flatFileHandler;
 
-    public void intialize() {
+    public void intialize(Class<? extends AbstractDataHandler> handler) {
         api = Optional.of(this);
+
+        this.flatFileHandler = handler;
     }
 }
