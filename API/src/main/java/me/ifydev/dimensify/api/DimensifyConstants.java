@@ -76,6 +76,7 @@ public class DimensifyConstants {
     public static final String PORTAL_DELETED = DIMENSIFY_PREFIX + "Portal '<PORTAL>' has been deleted!";
     public static final String PORTAL_LIST_FORMAT = "&2&l<NAME> - &9&lX: <X>, Y: <Y>, Z: <Z> - &e&lDimension: <DIMENSION> - &3&lDestination: <DESTINATION>";
     public static final String DIMENSION_LIST_FORMAT = "&2&l<NAME> - Type: <TYPE> - Default?: <DEFAULT>";
+    public static final String THERE_ARE_NONE = DIMENSIFY_PREFIX + "&2&lThere are no <ITEM>!";
 
     // Help response
     // TODO: This should automatically paginate.

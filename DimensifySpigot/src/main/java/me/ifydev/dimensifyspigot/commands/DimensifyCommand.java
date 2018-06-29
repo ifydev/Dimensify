@@ -142,12 +142,22 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 } else if (args[1].equalsIgnoreCase("list")) {
                     // List the current portals
-                    PortalHandler.listPortals().stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
+                    List<String> response = PortalHandler.listPortals();
+                    if (response.size() == 0) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.THERE_ARE_NONE.replace("<ITEM>", "portals")));
+                        return;
+                    }
+                    response.stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
                     return;
                 }
             } else if (args[0].equalsIgnoreCase("list")) {
                 // List the current worlds.
-                BasicHandler.listWorlds().stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
+                List<String> response = BasicHandler.listWorlds();
+                if (response.size() == 0) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.THERE_ARE_NONE.replace("<ITEM>", "worlds")));
+                    return;
+                }
+                response.stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
                 return;
             }
             // Send help
