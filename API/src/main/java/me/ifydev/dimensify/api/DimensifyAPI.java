@@ -25,7 +25,11 @@
 package me.ifydev.dimensify.api;
 
 import lombok.Getter;
+import me.ifydev.dimensify.api.backend.AbstractDataHandler;
+import me.ifydev.dimensify.api.backend.BackendType;
+import me.ifydev.dimensify.api.backend.ConnectionInformation;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 /**
@@ -36,9 +40,31 @@ import java.util.Optional;
  */
 public class DimensifyAPI {
 
-    @Getter private Optional<DimensifyAPI> api;
+    private static Optional<DimensifyAPI> api;
 
-    public void intialize() {
+    @Getter private Optional<AbstractDataHandler> databaseHandler;
+
+    public void initialize(Class<? extends AbstractDataHandler> handler, BackendType backendType, Optional<ConnectionInformation> connectionInformation) throws Exception {
         api = Optional.of(this);
+
+        try {
+            // If we don't have a database handler, then we default to the flat-file handler.
+            Class<? extends AbstractDataHandler> clazz = backendType.getHandler().orElse(handler);
+            databaseHandler = Optional.of(clazz.getConstructor(ConnectionInformation.class).newInstance(connectionInformation.orElse(null)));
+        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        if (!databaseHandler.isPresent()) throw new Exception("No data handler present.");
+
+        databaseHandler.ifPresent(h -> {
+            h.initialize();
+            h.reload();
+            if (h.connect()) System.out.println("Connected to database!");
+            else System.out.println("Unable to connect to database!");
+        });
+    }
+
+    public static Optional<DimensifyAPI> get() {
+        return api;
     }
 }

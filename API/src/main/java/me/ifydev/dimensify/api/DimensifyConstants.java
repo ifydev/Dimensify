@@ -38,17 +38,17 @@ public class DimensifyConstants {
 
     // Not enough arguments responses
     private static final String NOT_ENOUGH_ARGUMENTS_BASE = DIMENSIFY_PREFIX + "&c&lNot enough arguments: ";
-    public static final String NOT_ENOUGH_ARGUMENTS_CREATE_WORLD = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify create [dimension_type] [world_name]";
-    public static final String NOT_ENOUGH_ARGUMENTS_SEND_PLAYER = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify send [player] [world_name]";
-    public static final String NOT_ENOUGH_ARGUMENTS_GO = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify go [world_name]";
-    public static final String NOT_ENOUGH_ARGUMENTS_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify delete [world_name]";
+    public static final String NOT_ENOUGH_ARGUMENTS_CREATE_WORLD = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify create <dimension_type> <world_name>";
+    public static final String NOT_ENOUGH_ARGUMENTS_SEND_PLAYER = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify send <player> <dimension>";
+    public static final String NOT_ENOUGH_ARGUMENTS_GO = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify go <dimension>";
+    public static final String NOT_ENOUGH_ARGUMENTS_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify delete <dimension>";
     public static final String NOT_ENOUGH_ARGUMENTS_PORTAL = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify <create|delete|link> [args...]";
-    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_LINK = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify link <source_portal> <destination_portal>";
+    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_LINK = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify link <source_portal> <destination_dimension>";
     public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_CREATE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal create <name>";
     public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal delete <name>";
 
     // General errors
-    public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Plugin not present?!";
+    public static final String DATABASE_HANDLER_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Database handler not present?!";
     public static final String WORLD_EXISTS = DIMENSIFY_PREFIX + "&c&lWorld '<WORLD>' already exists!";
     public static final String INVALID_WORLD = DIMENSIFY_PREFIX + "&c&lWorld '<WORLD>' doesn't exist.";
     public static final String INVALID_DIMENSION_TYPE = DIMENSIFY_PREFIX + "&c&lDimension type '<TYPE>' is invalid.";
@@ -66,12 +66,13 @@ public class DimensifyConstants {
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
     public static final String WORLD_CREATED = DIMENSIFY_PREFIX + "World '<WORLD>' created!";
-    public static final String WHOOSH = DIMENSIFY_PREFIX + "Whoosh!";
+    public static final String WHOOSH = "&a&lWhoosh!";
     public static final String WORLD_DELETED = DIMENSIFY_PREFIX + "World '<WORLD>' has been deleted!";
     public static final String YOU_HAVE_BEEN_SENT = DIMENSIFY_PREFIX + "You have been sent to <WORLD>!";
     public static final String PLAYER_HAS_BEEN_SENT = DIMENSIFY_PREFIX + "<PLAYER> has been sent to <WORLD>!";
     public static final String PORTALS_LINKED = DIMENSIFY_PREFIX + "Portals have been linked!";
     public static final String PORTAL_CREATED = DIMENSIFY_PREFIX + "Portal '<PORTAL>' created!";
+    public static final String PORTAL_DELETED = DIMENSIFY_PREFIX + "Portal '<PORTAL>' has been deleted!";
 
     // Help response
     // TODO: This should automatically paginate.
@@ -85,7 +86,7 @@ public class DimensifyConstants {
                     "&a&l/dimensify delete <world_name>",
                     "&a&l/dimensify default [world_name]",
                     "&a&l/dimensify list",
-                    "&a&l/dimensify link <source_portal> <destination_portal>"
+                    "&a&l/dimensify link <source_portal> <destination_dimension>"
             )
     );
 }

@@ -1,16 +1,14 @@
 package me.ifydev.dimensifyspigot.portal;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import me.ifydev.dimensify.api.DimensifyConstants;
+import me.ifydev.dimensify.api.backend.AbstractDataHandler;
+import me.ifydev.dimensify.api.portal.PortalType;
 import me.ifydev.dimensifyspigot.DimensifyMain;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Innectic
@@ -18,104 +16,44 @@ import java.util.Set;
  */
 public class PortalRegistry {
 
-    @Getter
-    @AllArgsConstructor
-    public class PortalMeta {
-        private PortalType type;
-        private PortalCorners corners;
-        @Setter private Optional<String> link;
-    }
-
-    private Map<String, PortalMeta> portalCorners = new HashMap<>();
+    // TODO: Use the backend handlers instead
+    private Map<String, SpigotPortalMeta> portalCorners = new HashMap<>();
 
     public void setPortalLink(String portal, String world) {
-        portalCorners.get(portal).setLink(Optional.of(world));
+        if (!portalCorners.containsKey(portal)) return;
+        portalCorners.get(portal).setDestination(Optional.of(world));
 
-        Optional<DimensifyMain> plugin = DimensifyMain.get();
-        if (!plugin.isPresent()) return;
-
-        plugin.get().getConfig().set("link." + portal, world);
-        plugin.get().saveConfig();
-    }
-
-    public void removePortalLink(String portal) {
-//         if (portalLinkExists(link)) portalLinks.remove(link);
-
-        Optional<DimensifyMain> plugin = DimensifyMain.get();
-        if (!plugin.isPresent()) return;
-
-        plugin.get().getConfig().set("link." + portal, null);
-        plugin.get().saveConfig();
+        DimensifyMain plugin = DimensifyMain.get();
+        Optional<AbstractDataHandler> handler = plugin.getApi().getDatabaseHandler();
+        if (!handler.isPresent()) {
+            plugin.getLogger().severe(DimensifyConstants.DATABASE_HANDLER_NOT_PRESENT);
+            return;
+        }
+        handler.get().setPortalDestination(portal, world);
     }
 
     public void setPortal(String name, PortalType type, PortalCorners corners) {
-        portalCorners.put(name, new PortalMeta(type, corners, Optional.empty()));
+        portalCorners.put(name, new SpigotPortalMeta(name, corners, type, Optional.empty()));
 
-        Optional<DimensifyMain> plugin = DimensifyMain.get();
-        if (!plugin.isPresent()) return;
+        DimensifyMain plugin = DimensifyMain.get();
+        Optional<AbstractDataHandler> handler = plugin.getApi().getDatabaseHandler();
+        if (!handler.isPresent()) {
+            plugin.getLogger().severe(DimensifyConstants.DATABASE_HANDLER_NOT_PRESENT);
+            return;
+        }
 
-        plugin.get().getConfig().set("portal." + name + ".x1", corners.getFirst().getBlockX());
-        plugin.get().getConfig().set("portal." + name + ".y1", corners.getFirst().getBlockY());
-        plugin.get().getConfig().set("portal." + name + ".z1", corners.getFirst().getBlockZ());
-        plugin.get().getConfig().set("portal." + name + ".world", corners.getFirst().getWorld().getName());
-        plugin.get().getConfig().set("portal." + name + ".type", type.toString());
-
-        plugin.get().getConfig().set("portal." + name + ".x2", corners.getSecond().getBlockX());
-        plugin.get().getConfig().set("portal." + name + ".y2", corners.getSecond().getBlockY());
-        plugin.get().getConfig().set("portal." + name + ".z2", corners.getSecond().getBlockZ());
-
-        plugin.get().saveConfig();
-    }
-
-    public void removePortal(String name) {
-        portalCorners.remove(name);
-
-        Optional<DimensifyMain> plugin = DimensifyMain.get();
-        if (!plugin.isPresent()) return;
-
-        plugin.get().getConfig().set("portal." + name, null);
-        plugin.get().saveConfig();
-    }
-
-    public void load() {
-        Optional<DimensifyMain> plugin = DimensifyMain.get();
-        if (!plugin.isPresent()) return;
-
-        if (plugin.get().getConfig().getConfigurationSection("portal") == null) return;
-        Set<String> keys = plugin.get().getConfig().getConfigurationSection("portal").getKeys(false);
-
-        keys.forEach(key -> {
-            int x1 = plugin.get().getConfig().getInt("portal." + key + ".x1");
-            int y1 = plugin.get().getConfig().getInt("portal." + key + ".y1");
-            int z1 = plugin.get().getConfig().getInt("portal." + key + ".z1");
-
-            int x2 = plugin.get().getConfig().getInt("portal." + key + ".x2");
-            int y2 = plugin.get().getConfig().getInt("portal." + key + ".y2");
-            int z2 = plugin.get().getConfig().getInt("portal." + key + ".z2");
-
-            String world = plugin.get().getConfig().getString("portal." + key + ".world");
-            String type = plugin.get().getConfig().getString("portal." + key + ".type");
-            if (world == null || type == null) return;
-
-            System.out.println(key);
-            portalCorners.put(key, new PortalMeta(PortalType.findType(type), new PortalCorners(
-                    new Location(Bukkit.getWorld(world), x1, y1, z1),
-                    new Location(Bukkit.getWorld(world), x2, y2, z2)
-            ), Optional.ofNullable(plugin.get().getConfig().getString("link." + key, null))));
-        });
+        handler.get().createPortal(new SpigotPortalMeta(name, corners, type, Optional.empty()));
     }
 
     public boolean isPortalNameUsed(String name) {
         return portalCorners.containsKey(name);
     }
 
-    public Optional<PortalMeta> getPortal(String name) {
-        return Optional.ofNullable(portalCorners.getOrDefault(name, null));
-    }
-
-    public Optional<PortalMeta> findCornersFromPosition(Location location) {
-        for (PortalMeta meta : portalCorners.values()) {
-            PortalCorners corner = meta.getCorners();
+    public Optional<SpigotPortalMeta> findCornersFromPosition(Location location) {
+        for (SpigotPortalMeta meta : portalCorners.values()) {
+            Optional<PortalCorners> cornersOptional = meta.getCorners();
+            if (!cornersOptional.isPresent()) continue;
+            PortalCorners corner = cornersOptional.get();
 
             Location bottom;
             Location top;

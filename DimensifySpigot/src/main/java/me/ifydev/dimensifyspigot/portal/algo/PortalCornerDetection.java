@@ -36,7 +36,7 @@ public class PortalCornerDetection {
             isBottom = false;
             isLeft = false;
         } else if (portalDown && portalRight) isBottom = false;
-        else if   (portalUp && portalLeft)    isLeft = false;
+        else if (portalUp && portalLeft)    isLeft = false;
 
         int distanceMoved = 0;
         Block current = starting.getWorld().getBlockAt(starting);

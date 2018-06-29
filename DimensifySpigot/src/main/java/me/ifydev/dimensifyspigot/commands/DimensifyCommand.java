@@ -1,23 +1,35 @@
 package me.ifydev.dimensifyspigot.commands;
 
 import me.ifydev.dimensify.api.DimensifyConstants;
+import me.ifydev.dimensify.api.backend.AbstractDataHandler;
+import me.ifydev.dimensify.api.dimensions.Dimension;
 import me.ifydev.dimensify.api.meta.MetaParser;
 import me.ifydev.dimensify.api.meta.WorldMeta;
+import me.ifydev.dimensify.api.portal.PortalType;
 import me.ifydev.dimensify.api.util.ArgumentUtil;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import me.ifydev.dimensifyspigot.portal.PortalCorners;
-import me.ifydev.dimensifyspigot.portal.PortalType;
 import me.ifydev.dimensifyspigot.portal.algo.PortalCornerDetection;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
+import me.ifydev.dimensifyspigot.util.MiscUtil;
 import me.ifydev.dimensifyspigot.world.DimensifyWorld;
-import org.bukkit.*;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.WorldType;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Innectic
@@ -27,13 +39,11 @@ public class DimensifyCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
-        Optional<DimensifyMain> plugin = DimensifyMain.get();
-        if (!plugin.isPresent()) {
-            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PLUGIN_NOT_PRESENT));
-            return false;
-        }
+        DimensifyMain plugin = DimensifyMain.get();
+        List<Dimension> dimensions = plugin.getApi().getDatabaseHandler().map(AbstractDataHandler::getDimensions).orElse(Collections.emptyList());
+        List<String> dimensionNames = dimensions.stream().map(Dimension::getName).collect(Collectors.toList());
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin.get(), () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (args.length < 1) {
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_HEADER));
                 DimensifyConstants.HELP_RESPONSE.forEach(messages ->
@@ -66,7 +76,6 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CREATING_WORLD.replace("<WORLD>", worldName)));
-                DimensifyWorld creator = new DimensifyWorld(worldName, plugin.get());
                 MetaParser.MetaResult result = MetaParser.parse(metas);
                 if (result.getError().isPresent()) {
                     sender.sendMessage(ColorUtil.makeReadable(result.getError().get()));
@@ -77,10 +86,13 @@ public class DimensifyCommand implements CommandExecutor {
                     // if our meta isn't present, AND there wasn't an error to provide, then something's really
                     // messed up.
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INTERNAL_ERROR));
-                    plugin.get().getLogger().severe("Meta was not present after parsing meta information.");
+                    plugin.getLogger().severe("Meta was not present after parsing meta information.");
                     return;
                 }
                 WorldMeta meta = result.getMeta().get();
+                DimensifyWorld creator = new DimensifyWorld(worldName, plugin);
+                creator.setDefault(false);
+                creator.setMeta(Optional.of(MiscUtil.joinStrings(' ', Arrays.asList(metas))));
 
                 creator.type(type);
                 creator.generateStructures(meta.isStructures());
@@ -98,15 +110,17 @@ public class DimensifyCommand implements CommandExecutor {
 
                 meta.getSeed().ifPresent(seed -> creator.seed(Long.valueOf(seed)));
 
-                Bukkit.getScheduler().runTask(plugin.get(), () -> plugin.get().getWorldController().loadWorld(creator, plugin.get()));
-                plugin.get().getLogger().info("Finished generating world '" + worldName + "'!");
-                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    plugin.getWorldController().loadWorld(creator);
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
+                });
                 return;
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_ARENT_A_PLAYER));
                     return;
                 }
+                Player player = (Player) sender;
 
                 if (args.length < 2) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_GO));
@@ -114,15 +128,16 @@ public class DimensifyCommand implements CommandExecutor {
                 }
 
                 String worldName = args[1];
-                if (Bukkit.getWorld(worldName) == null && !plugin.get().getAllWorlds().contains(worldName)) {
+                if (Bukkit.getWorld(worldName) == null && !dimensionNames.contains(worldName)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                     return;
                 }
 
-                Bukkit.getScheduler().runTask(plugin.get(), () -> {
+                Bukkit.getScheduler().runTask(plugin, () -> {
                     World world = Bukkit.getWorld(worldName);
-                    ((Player) sender).teleport(world.getSpawnLocation());
-                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WHOOSH));
+
+                    player.teleport(world.getSpawnLocation());
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ColorUtil.makeReadable(DimensifyConstants.WHOOSH)));
                 });
                 return;
             } else if (args[0].equalsIgnoreCase("delete")) {
@@ -137,16 +152,16 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
                 // Make sure the world exists
-                Bukkit.getScheduler().runTask(plugin.get(), () -> {
-                    if (Bukkit.getWorld(worldName) == null && plugin.get().getAllWorlds().contains(worldName)) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (Bukkit.getWorld(worldName) == null && dimensionNames.contains(worldName)) {
                         // Load the world
-                        plugin.get().getWorldController().loadWorld(new DimensifyWorld(worldName, plugin.get()), plugin.get());
+                        plugin.getWorldController().loadWorld(new DimensifyWorld(worldName, plugin));
                     } else if (Bukkit.getWorld(worldName) == null) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", worldName)));
                         return;
                     }
                     // World exists, delete it
-                    boolean deleted = plugin.get().getWorldController().deleteWorld(worldName);
+                    boolean deleted = plugin.getWorldController().deleteWorld(worldName);
                     String response = deleted ? DimensifyConstants.WORLD_DELETED : DimensifyConstants.INVALID_WORLD;
                     response = response.replace("<WORLD>", worldName);
                     sender.sendMessage(ColorUtil.makeReadable(response));
@@ -165,15 +180,15 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
 
-                if (Bukkit.getWorld(args[2]) == null && !plugin.get().getAllWorlds().contains(args[2])) {
+                if (Bukkit.getWorld(args[2]) == null && !dimensionNames.contains(args[2])) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", args[2])));
                     return;
                 }
 
-                Bukkit.getScheduler().runTask(plugin.get(), () -> {
-                    if (!plugin.get().getWorldNames().contains(args[2])) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (!dimensionNames.contains(args[2])) {
                         // Load the world, since it's not here
-                        plugin.get().getWorldController().loadWorld(new DimensifyWorld(args[2], plugin.get()), plugin.get());
+                        plugin.getWorldController().loadWorld(new DimensifyWorld(args[2], plugin));
                     }
 
                     World world = Bukkit.getWorld(args[2]);
@@ -212,15 +227,27 @@ public class DimensifyCommand implements CommandExecutor {
                         player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_PORTAL));
                         return;
                     }
-                    if (plugin.get().getPortalRegistry().isPortalNameUsed(portalName)) {
+                    if (plugin.getPortalRegistry().isPortalNameUsed(portalName)) {
                         player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_NAME_ALREADY_USED.replace("<NAME>", portalName)));
                         return;
                     }
-                    plugin.get().getPortalRegistry().setPortal(portalName, PortalType.NETHER, corners.get());
+                    plugin.getPortalRegistry().setPortal(portalName, PortalType.NETHER, corners.get());
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_CREATED.replace("<PORTAL>", portalName)));
                     return;
                 } else if (args[1].equalsIgnoreCase("delete")) {
+                    if(args.length < 3) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_PORTAL_DELETE));
+                        return;
+                    }
 
+                    String portal = args[2];
+                    if (!plugin.getPortalRegistry().isPortalNameUsed(portal)) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_DOES_NOT_EXIST.replace("<PORTAL>", portal)));
+                        return;
+                    }
+                    plugin.getApi().getDatabaseHandler().ifPresent(db -> db.removePortal(portal));
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_DELETED));
+                    return;
                 } else if (args[1].equalsIgnoreCase("link")) {
                     if (args.length < 4) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_PORTAL_LINK));
@@ -230,17 +257,17 @@ public class DimensifyCommand implements CommandExecutor {
                     String world = args[3];
 
                     // Make sure the portal exists.
-                    if (!plugin.get().getPortalRegistry().isPortalNameUsed(portalA)) {
+                    if (!plugin.getPortalRegistry().isPortalNameUsed(portalA)) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_DOES_NOT_EXIST.replace("<PORTAL>", portalA)));
                         return;
                     }
                     // And make sure the world exists
-                    if (!plugin.get().getWorldNames().contains(world)) {
+                    if (!plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(world).isPresent()).orElse(true)) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.INVALID_WORLD.replace("<WORLD>", world)));
                         return;
                     }
 
-                    plugin.get().getPortalRegistry().setPortalLink(portalA, world);
+                    plugin.getPortalRegistry().setPortalLink(portalA, world);
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTALS_LINKED));
                     return;
                 }

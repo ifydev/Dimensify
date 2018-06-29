@@ -1,5 +1,6 @@
 package me.ifydev.dimensifyspigot.world;
 
+import me.ifydev.dimensify.api.dimensions.Dimension;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
@@ -16,10 +17,10 @@ import java.util.List;
 public class WorldController {
 
     public void loadAllWorlds(List<String> worldNames, DimensifyMain plugin) {
-        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin), plugin));
+        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin)));
     }
 
-    public void loadWorld(DimensifyWorld creator, DimensifyMain plugin) {
+    public void loadWorld(DimensifyWorld creator) {
         World world;
         try {
             world = creator.createWorld();
@@ -31,8 +32,11 @@ public class WorldController {
             System.out.println("World was null after generation.");
             return;
         }
-        DimensifyMain.get().ifPresent(main -> main.getLogger().info("Finished generating " + world.getName() + "!"));
-        plugin.getWorldNames().add(creator.name());
+        DimensifyMain plugin = DimensifyMain.get();
+
+        plugin.getApi().getDatabaseHandler().ifPresent(db ->
+                db.createDimension(new Dimension(creator.name(), creator.type().getName(), creator.getMeta(), creator.isDefault())));
+        plugin.getLogger().info("Finished generating " + world.getName() + "!");
     }
 
     public boolean deleteWorld(String worldName) {

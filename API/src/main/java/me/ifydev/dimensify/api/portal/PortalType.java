@@ -1,10 +1,10 @@
-package me.ifydev.dimensifyspigot.portal;
+package me.ifydev.dimensify.api.portal;
 
 import lombok.AllArgsConstructor;
 
 /**
  * @author Innectic
- * @since 06/23/2018
+ * @since 06/26/2018
  */
 @AllArgsConstructor
 public enum PortalType {

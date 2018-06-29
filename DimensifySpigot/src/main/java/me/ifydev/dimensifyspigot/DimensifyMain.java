@@ -26,17 +26,18 @@ package me.ifydev.dimensifyspigot;
 
 import lombok.Getter;
 import me.ifydev.dimensify.api.DimensifyAPI;
+import me.ifydev.dimensify.api.backend.BackendType;
+import me.ifydev.dimensifyspigot.backend.SpigotFlatFileHandler;
 import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import me.ifydev.dimensifyspigot.events.PlayerPortal;
 import me.ifydev.dimensifyspigot.portal.PortalRegistry;
+import me.ifydev.dimensifyspigot.util.Verifier;
 import me.ifydev.dimensifyspigot.world.WorldController;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
@@ -48,34 +49,42 @@ public class DimensifyMain extends JavaPlugin {
 
     @Getter private DimensifyAPI api;
     @Getter private boolean preloadWorlds = false;
-    @Getter private List<String> worldNames;
-    @Getter private List<String> allWorlds;
 
     @Getter private WorldController worldController;
     @Getter private PortalRegistry portalRegistry;
 
+    @Getter private boolean allowEntryByDefault = true;
+    @Getter private boolean permissionRestrictDimensions = false;
+
     @Override
     public void onEnable() {
+        createConfig();
+
+        // Attempt to get the data handler
+        String handler = getConfig().getString("storage", BackendType.SQLITE.getDisplayName());
+        Optional<BackendType> backendType = BackendType.getHandlerForType(handler);
+        if (!backendType.isPresent()) {
+            getLogger().severe("Invalid storage type!");
+            return;
+        }
+
         getLogger().info("Initializing Dimensify API...");
         api = new DimensifyAPI();
-        api.intialize();
+        try {
+            api.initialize(SpigotFlatFileHandler.class, backendType.get(), Verifier.verifyConnectionInformation(backendType.get()));
+        } catch (Exception e) {
+            getLogger().severe("Could not initialize Dimensify API!");
+            e.printStackTrace();
+            return;
+        }
         getLogger().info("Done!");
 
         worldController = new WorldController();
         portalRegistry = new PortalRegistry();
 
-        getLogger().info("Loading portals...");
-        portalRegistry.load();
-        getLogger().info("Done!");
-
-        createConfig();
-
         preloadWorlds = getConfig().getBoolean("preload_worlds", true);
 
-        allWorlds = getConfig().getStringList("worlds");
-        worldNames = new ArrayList<>();
-
-        if (preloadWorlds) worldController.loadAllWorlds(allWorlds, this);
+//        if (preloadWorlds) worldController.loadAllWorlds(allWorlds, this);
 
         registerListeners();
         registerCommands();
@@ -116,15 +125,7 @@ public class DimensifyMain extends JavaPlugin {
         }
     }
 
-    public void addWorld(String name) {
-        if (allWorlds.contains(name)) return;
-        worldNames.add(name);
-        allWorlds.add(name);
-        getConfig().set("worlds", worldNames);
-        saveConfig();
-    }
-
-    public static Optional<DimensifyMain> get() {
-        return Optional.ofNullable(DimensifyMain.getPlugin(DimensifyMain.class));
+    public static DimensifyMain get() {
+        return DimensifyMain.getPlugin(DimensifyMain.class);
     }
 }
