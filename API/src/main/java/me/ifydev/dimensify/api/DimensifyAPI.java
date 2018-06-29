@@ -44,7 +44,7 @@ public class DimensifyAPI {
 
     @Getter private Optional<AbstractDataHandler> databaseHandler;
 
-    public void initialize(Class<? extends AbstractDataHandler> handler, BackendType backendType, Optional<ConnectionInformation> connectionInformation) throws Exception {
+    public void initialize(String defaultWorld, Class<? extends AbstractDataHandler> handler, BackendType backendType, Optional<ConnectionInformation> connectionInformation) throws Exception {
         api = Optional.of(this);
 
         try {
@@ -57,7 +57,8 @@ public class DimensifyAPI {
         if (!databaseHandler.isPresent()) throw new Exception("No data handler present.");
 
         databaseHandler.ifPresent(h -> {
-            h.initialize();
+            System.out.println("Using " + defaultWorld + " as the default world...");
+            h.initialize(defaultWorld);
             h.reload();
             if (h.connect()) System.out.println("Connected to database!");
             else System.out.println("Unable to connect to database!");

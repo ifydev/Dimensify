@@ -28,6 +28,8 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     private File storageFile;
     private FileConfiguration storage;
 
+    private String defaultWorld;
+
     public SpigotFlatFileHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
     }
@@ -42,9 +44,10 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     }
 
     @Override
-    public void initialize() {
+    public void initialize(String defaultWorld) {
         DimensifyMain plugin = DimensifyMain.get();
         File data = plugin.getDataFolder();
+        this.defaultWorld = defaultWorld;
 
         // Ensure the files exist
         storageFile = new File(data, plugin.getConfig().getString("connection.file", "storage.yml"));
@@ -84,7 +87,7 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     @Override
     public boolean createPortal(PortalMeta meta) {
         // Make sure this does not exist in the cache already
-        Optional<PortalMeta> portal = this.portals.stream().filter(m -> m.getName().equals(meta.getName())).findFirst();
+        Optional<PortalMeta> portal = this.portals.stream().filter(m -> m.getName().equalsIgnoreCase(meta.getName())).findFirst();
         if (portal.isPresent()) return false;
         this.portals.add(meta);
 
@@ -111,7 +114,7 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     @Override
     public boolean removePortal(String name) {
         // Make sure the portal exists in the cache.
-        Optional<PortalMeta> meta = this.portals.stream().filter(m -> m.getName().equals(name)).findFirst();
+        Optional<PortalMeta> meta = this.portals.stream().filter(m -> m.getName().equalsIgnoreCase(name)).findFirst();
         if (!meta.isPresent()) return false;
 
         // Remove the portal from all caches
@@ -164,16 +167,17 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     }
 
     @Override
-    public void setPortalDestination(String portal, String destination) {
+    public boolean setPortalDestination(String portal, String destination) {
         this.destinations.put(portal, destination);
 
         storage.set("link." + portal, destination);
         saveStorage();
+        return true;
     }
 
     @Override
     public boolean createDimension(Dimension dimension) {
-        Optional<Dimension> d = this.dimensions.stream().filter(dim -> dim.getName().equals(dimension.getName())).findFirst();
+        Optional<Dimension> d = this.dimensions.stream().filter(dim -> dim.getName().equalsIgnoreCase(dimension.getName())).findFirst();
         if (d.isPresent()) return false;
         this.dimensions.add(dimension);
 
@@ -190,7 +194,7 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     @Override
     public boolean removeDimension(String name) {
         // Make sure it's cached
-        Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equals(name)).findFirst();
+        Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
         if (!dimension.isPresent()) return false;
 
         // Remove from the cache
@@ -225,16 +229,17 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
 
     @Override
     public Optional<Dimension> getDimension(String name) {
-        return Optional.empty();
+        if (name.equalsIgnoreCase(defaultWorld)) return Optional.of(new Dimension(defaultWorld, "", Optional.empty(), false));
+        return this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override
     public Optional<PortalMeta> getPortal(String name) {
-        return Optional.empty();
+        return this.portals.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override
     public Optional<String> getDestinationForPortal(String portalName) {
-        return Optional.empty();
+        return Optional.ofNullable(destinations.getOrDefault(portalName, null));
     }
 }

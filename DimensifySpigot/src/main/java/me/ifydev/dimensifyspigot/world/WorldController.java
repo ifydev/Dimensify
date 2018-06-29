@@ -8,7 +8,6 @@ import org.bukkit.World;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author Innectic
@@ -16,8 +15,13 @@ import java.util.List;
  */
 public class WorldController {
 
-    public void loadAllWorlds(List<String> worldNames, DimensifyMain plugin) {
-        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin)));
+    public World getWorld(String name) {
+        World world = Bukkit.getWorld(name);
+        if (world == null) {
+            this.loadWorld(new DimensifyWorld(name, DimensifyMain.get()));
+            world = Bukkit.getWorld(name);
+        }
+        return world;
     }
 
     public void loadWorld(DimensifyWorld creator) {
@@ -36,11 +40,10 @@ public class WorldController {
 
         plugin.getApi().getDatabaseHandler().ifPresent(db ->
                 db.createDimension(new Dimension(creator.name(), creator.type().getName(), creator.getMeta(), creator.isDefault())));
-        plugin.getLogger().info("Finished generating " + world.getName() + "!");
     }
 
-    public boolean deleteWorld(String worldName) {
-        World world = Bukkit.getWorld(worldName);
+    public boolean deleteWorld(String dimensionName) {
+        World world = Bukkit.getWorld(dimensionName);
         if (world == null) return false;
         // Teleport all the players from the deleted world, to the main world.
         // TODO: We probably want to change this to whatever the default world is.
@@ -48,6 +51,11 @@ public class WorldController {
 
         File folder = world.getWorldFolder();
         Bukkit.unloadWorld(world, false);
+
+        // Remove from database
+        DimensifyMain plugin = DimensifyMain.get();
+        plugin.getApi().getDatabaseHandler().ifPresent(db ->
+                db.removeDimension(dimensionName));
 
         try {
             FileUtils.deleteDirectory(folder);

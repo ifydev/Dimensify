@@ -1,13 +1,10 @@
 package me.ifydev.dimensifyspigot.portal;
 
-import me.ifydev.dimensify.api.DimensifyConstants;
-import me.ifydev.dimensify.api.backend.AbstractDataHandler;
-import me.ifydev.dimensify.api.portal.PortalType;
+import me.ifydev.dimensify.api.portal.PortalMeta;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import org.bukkit.Location;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -16,41 +13,14 @@ import java.util.Optional;
  */
 public class PortalRegistry {
 
-    // TODO: Use the backend handlers instead
-    private Map<String, SpigotPortalMeta> portalCorners = new HashMap<>();
-
-    public void setPortalLink(String portal, String world) {
-        if (!portalCorners.containsKey(portal)) return;
-        portalCorners.get(portal).setDestination(Optional.of(world));
-
-        DimensifyMain plugin = DimensifyMain.get();
-        Optional<AbstractDataHandler> handler = plugin.getApi().getDatabaseHandler();
-        if (!handler.isPresent()) {
-            plugin.getLogger().severe(DimensifyConstants.DATABASE_HANDLER_NOT_PRESENT);
-            return;
-        }
-        handler.get().setPortalDestination(portal, world);
-    }
-
-    public void setPortal(String name, PortalType type, PortalCorners corners) {
-        portalCorners.put(name, new SpigotPortalMeta(name, corners, type, Optional.empty()));
-
-        DimensifyMain plugin = DimensifyMain.get();
-        Optional<AbstractDataHandler> handler = plugin.getApi().getDatabaseHandler();
-        if (!handler.isPresent()) {
-            plugin.getLogger().severe(DimensifyConstants.DATABASE_HANDLER_NOT_PRESENT);
-            return;
-        }
-
-        handler.get().createPortal(new SpigotPortalMeta(name, corners, type, Optional.empty()));
-    }
-
-    public boolean isPortalNameUsed(String name) {
-        return portalCorners.containsKey(name);
-    }
-
     public Optional<SpigotPortalMeta> findCornersFromPosition(Location location) {
-        for (SpigotPortalMeta meta : portalCorners.values()) {
+        DimensifyMain plugin = DimensifyMain.get();
+        if (!plugin.getApi().getDatabaseHandler().isPresent()) return Optional.empty();
+
+        List<PortalMeta> portalCorners = plugin.getApi().getDatabaseHandler().get().getPortals();
+        for (PortalMeta regularMeta : portalCorners) {
+            SpigotPortalMeta meta = (SpigotPortalMeta) regularMeta;
+
             Optional<PortalCorners> cornersOptional = meta.getCorners();
             if (!cornersOptional.isPresent()) continue;
             PortalCorners corner = cornersOptional.get();

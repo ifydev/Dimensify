@@ -54,6 +54,7 @@ public class DimensifyConstants {
     public static final String INVALID_DIMENSION_TYPE = DIMENSIFY_PREFIX + "&c&lDimension type '<TYPE>' is invalid.";
     public static final String INVALID_ENVIRONMENT_TYPE = DIMENSIFY_PREFIX + "&c&lEnvironment type '<TYPE>' is invalid.";
     public static final String SEED_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lSeed has no value.";
+    public static final String INVALID_SEED = DIMENSIFY_PREFIX + "&c&lInvalid seed value!";
     public static final String ENV_NOT_PROVIDED = DIMENSIFY_PREFIX + "&c&lEnv has no value.";
     public static final String INVALID_PLAYER = DIMENSIFY_PREFIX + "&c&lInvalid player: <PLAYER>";
     public static final String INTERNAL_ERROR = DIMENSIFY_PREFIX + "&c&lAn internal error has occurred. Please check your console for more details";
@@ -62,17 +63,19 @@ public class DimensifyConstants {
     public static final String INVALID_PORTAL = DIMENSIFY_PREFIX + "&c&lInvalid portal!";
     public static final String PORTAL_NAME_ALREADY_USED = DIMENSIFY_PREFIX + "&c&lPortal name '<NAME>' already used!";
     public static final String CANNOT_DELETE_MAIN_WORLD = DIMENSIFY_PREFIX + "&c&lCannot delete the main world!";
+    public static final String COULD_NOT_CONNECT_TO_DATABASE = DIMENSIFY_PREFIX + "&c&lCannot connect to the database!";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
     public static final String WORLD_CREATED = DIMENSIFY_PREFIX + "World '<WORLD>' created!";
     public static final String WHOOSH = "&a&lWhoosh!";
     public static final String WORLD_DELETED = DIMENSIFY_PREFIX + "World '<WORLD>' has been deleted!";
-    public static final String YOU_HAVE_BEEN_SENT = DIMENSIFY_PREFIX + "You have been sent to <WORLD>!";
     public static final String PLAYER_HAS_BEEN_SENT = DIMENSIFY_PREFIX + "<PLAYER> has been sent to <WORLD>!";
     public static final String PORTALS_LINKED = DIMENSIFY_PREFIX + "Portals have been linked!";
     public static final String PORTAL_CREATED = DIMENSIFY_PREFIX + "Portal '<PORTAL>' created!";
     public static final String PORTAL_DELETED = DIMENSIFY_PREFIX + "Portal '<PORTAL>' has been deleted!";
+    public static final String PORTAL_LIST_FORMAT = "&2&l<NAME> - &9&lX: <X>, Y: <Y>, Z: <Z> - &e&lDimension: <DIMENSION> - &3&lDestination: <DESTINATION>";
+    public static final String DIMENSION_LIST_FORMAT = "&2&l<NAME> - Type: <TYPE> - Default?: <DEFAULT>";
 
     // Help response
     // TODO: This should automatically paginate.
