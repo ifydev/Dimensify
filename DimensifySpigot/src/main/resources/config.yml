@@ -1,11 +1,31 @@
+# This is the backend that will be used for storing data within Dimensify.
+# The following options are valid: `sqlite`, `flatfile`, and `mysql`.
 storage: sqlite
+# All options except for `file` are only used for MySQL`.
+# When the storage is `sqlite`, the file name for the database will be the name you selected within
+# `file`, with `.db` appended to the end.
+# However, when `storage` is `flatfile`, then it will be `file` with `.yml` appended to the end.
 connection:
   host: localhost
   port: 3306
   database: dimensify
   username: dimensify
   password: magicalpassword
-  file: dimensify.db
+  file: dimensify
+
+# Setting `permission_restrict_dimensions` to `true` will make all dimensions require permissions in
+# the following format: `dimension.<dimension_name>.allow` or `dimension.<dimension_name>.deny`.
+# If the permission is not present on the player, then we'll use the value from `default_dimension_restriction`.
+permission_restrict_dimensions: false
+# `true` allows entry by default, `false` denies entry by default.
+default_dimension_restriction: true
 
 preload_worlds: false
-worlds:
+# To set worlds to be preloaded on server startup, add them to the `world_preload` list.
+# Ex:
+# world_preload:
+#   - something
+#   - another
+#
+# For worlds to preload, the option `preload_worlds` must be set to true as well.
+world_preload:

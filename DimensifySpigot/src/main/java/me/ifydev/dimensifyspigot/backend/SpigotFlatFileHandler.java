@@ -47,7 +47,7 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
         File data = plugin.getDataFolder();
 
         // Ensure the files exist
-        storageFile = new File(data, "storage.yml");
+        storageFile = new File(data, plugin.getConfig().getString("connection.file", "storage.yml"));
         if (!storageFile.exists()) {
             storageFile.getParentFile().mkdirs();
             plugin.saveResource("storage.yml", false);

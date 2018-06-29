@@ -110,9 +110,10 @@ public class DimensifyCommand implements CommandExecutor {
 
                 meta.getSeed().ifPresent(seed -> creator.seed(Long.valueOf(seed)));
 
-                Bukkit.getScheduler().runTask(plugin, () -> plugin.getWorldController().loadWorld(creator));
-                plugin.getLogger().info("Finished generating world '" + worldName + "'!");
-                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    plugin.getWorldController().loadWorld(creator);
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
+                });
                 return;
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!(sender instanceof Player)) {

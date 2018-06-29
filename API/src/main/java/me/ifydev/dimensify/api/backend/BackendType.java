@@ -14,7 +14,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Getter
 public enum BackendType {
-    FLAT_FILE(Optional.empty(), "Flat file"),
+    FLAT_FILE(Optional.empty(), "FlatFile"),
     MYSQL(Optional.of(SQLHandler.class), "MySQL"),
     SQLITE(Optional.of(SQLHandler.class), "SQLite");
 

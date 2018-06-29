@@ -53,6 +53,9 @@ public class DimensifyMain extends JavaPlugin {
     @Getter private WorldController worldController;
     @Getter private PortalRegistry portalRegistry;
 
+    @Getter private boolean allowEntryByDefault = true;
+    @Getter private boolean permissionRestrictDimensions = false;
+
     @Override
     public void onEnable() {
         createConfig();
