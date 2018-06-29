@@ -111,8 +111,6 @@ public class DimensifyCommand implements CommandExecutor {
                 meta.getSeed().ifPresent(seed -> creator.seed(Long.valueOf(seed)));
 
                 Bukkit.getScheduler().runTask(plugin, () -> plugin.getWorldController().loadWorld(creator));
-                plugin.getApi().getDatabaseHandler().ifPresent(db ->
-                        db.createDimension(new Dimension(creator.name(), creator.type().getName(), creator.getMeta(), creator.isDefault())));
                 plugin.getLogger().info("Finished generating world '" + worldName + "'!");
                 sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.WORLD_CREATED.replace("<WORLD>", worldName)));
                 return;
@@ -236,7 +234,19 @@ public class DimensifyCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_CREATED.replace("<PORTAL>", portalName)));
                     return;
                 } else if (args[1].equalsIgnoreCase("delete")) {
+                    if(args.length < 3) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_PORTAL_DELETE));
+                        return;
+                    }
 
+                    String portal = args[2];
+                    if (!plugin.getPortalRegistry().isPortalNameUsed(portal)) {
+                        sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_DOES_NOT_EXIST.replace("<PORTAL>", portal)));
+                        return;
+                    }
+                    plugin.getApi().getDatabaseHandler().ifPresent(db -> db.removePortal(portal));
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.PORTAL_DELETED));
+                    return;
                 } else if (args[1].equalsIgnoreCase("link")) {
                     if (args.length < 4) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_PORTAL_LINK));
