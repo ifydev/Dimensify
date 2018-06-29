@@ -7,9 +7,7 @@ import me.ifydev.dimensify.api.portal.PortalMeta;
 import me.ifydev.dimensify.api.portal.PortalType;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author Innectic
@@ -72,9 +70,9 @@ public class SQLHandler extends AbstractDataHandler {
             dimensionsStatement.execute();
             dimensionsStatement.close();
 
-            PreparedStatement portalsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS" + database +
-                    "portals (x1 INTEGER NOT NULL, x2 INTEGER NOT NULL, y1 INTEGER NOT NULL, y2 INTEGER NOT NULL" +
-                    ", z1 INTEGER NOT NULL, z2 INTEGER NOT NULL, destination VARCHAR(60), `type` VARCHAR(60) NOT NULL `name` VARCHAR(60) NOT NULL)");
+            PreparedStatement portalsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
+                    "portals (`world` VARCHAR(50) NOT NULL, x1 INTEGER NOT NULL, x2 INTEGER NOT NULL, y1 INTEGER NOT NULL, y2 INTEGER NOT NULL" +
+                    ", z1 INTEGER NOT NULL, z2 INTEGER NOT NULL, destination VARCHAR(60), `type` VARCHAR(60) NOT NULL, `name` VARCHAR(60) NOT NULL)");
             portalsStatement.execute();
             portalsStatement.close();
 
@@ -101,8 +99,8 @@ public class SQLHandler extends AbstractDataHandler {
     public void reload() {
         this.drop();
 
-        loadPortals();
-        loadDimensions();
+        this.portals = this.getPortals();
+        this.dimensions = this.getDimensions();
     }
 
     @Override
@@ -112,126 +110,182 @@ public class SQLHandler extends AbstractDataHandler {
     }
 
     @Override
-    public void createPortal(PortalMeta meta) {
+    public boolean createPortal(PortalMeta meta) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return;
+        if (!connection.isPresent()) return false;
 
         try {
             PreparedStatement statement = connection.get().prepareStatement("INSERT INTO portals " +
-                    "(x1, x2, y1, y2, z1, z2, destination, `type`, `name`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            statement.setInt(1, meta.getX1());
-            statement.setInt(2, meta.getY1());
-            statement.setInt(3, meta.getZ1());
+                    "(world, x1, y1, z1, x2, y2, z2, destination, `type`, `name`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-            statement.setInt(4, meta.getX2());
-            statement.setInt(5, meta.getY2());
-            statement.setInt(6, meta.getZ2());
+            statement.setString(1, meta.getWorld());
+            statement.setInt(2, meta.getX1());
+            statement.setInt(3, meta.getY1());
+            statement.setInt(4, meta.getZ1());
 
-            statement.setString(7, meta.getDestination().orElse(null));
-            statement.setString(8, meta.getType().name());
-            statement.setString(9, meta.getName());
+            statement.setInt(5, meta.getX2());
+            statement.setInt(6, meta.getY2());
+            statement.setInt(7, meta.getZ2());
+
+            statement.setString(8, meta.getDestination().orElse(null));
+            statement.setString(9, meta.getType().name());
+            statement.setString(10, meta.getName());
 
             statement.execute();
             statement.close();
             connection.get().close();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override
-    public void removePortal(String name) {
+    public boolean removePortal(String name) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return;
+        if (!connection.isPresent()) return false;
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM portals WHERE name=?");
+            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM portals WHERE `name`=?");
             statement.setString(1, name);
 
             statement.execute();
             statement.close();
             connection.get().close();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override
-    public void loadPortals() {
+    public List<PortalMeta> getPortals() {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return;
+        if (!connection.isPresent()) return Collections.emptyList();
 
+        List<PortalMeta> portals = new ArrayList<>();
         try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM dimensions");
+            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM portals");
             ResultSet results = statement.executeQuery();
 
             while (results.next())
-                this.portals.add(new PortalMeta(
+                portals.add(new PortalMeta(
                         results.getString("name"),
-                        results.getInt("x1"), results.getInt("y1"), results.getInt("z1"),
-                        results.getInt("x2"), results.getInt("y2"), results.getInt("z2"),
+                        results.getInt("x1"), results.getInt("x2"), results.getInt("y1"),
+                        results.getInt("y2"), results.getInt("z1"), results.getInt("z2"),
                         results.getString("world"), Optional.ofNullable(results.getString("destination")),
                         PortalType.findType(results.getString("type"))
                 ));
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return portals;
     }
 
     @Override
-    public void loadDimensions() {
+    public void setPortalDestination(String portal, String destination) {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) return;
 
+        this.destinations.put(portal, destination);
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("UPDATE portals SET destination=? WHERE `name`=?");
+            statement.setString(1, destination);
+            statement.setString(2, portal);
+            statement.execute();
+
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<Dimension> getDimensions() {
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return Collections.emptyList();
+
+        List<Dimension> dimensions = new ArrayList<>();
         try {
             PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM dimensions");
             ResultSet results = statement.executeQuery();
 
             while (results.next())
-                this.dimensions.add(new Dimension(
+                dimensions.add(new Dimension(
                         results.getString("name"), results.getString("type"),
                         Optional.ofNullable(results.getString("meta")), results.getBoolean("default")));
         } catch (SQLException e) {
             e.printStackTrace();
+            return Collections.emptyList();
         }
+        return dimensions;
     }
 
     @Override
-    public void createDimension(Dimension dimension) {
+    public Optional<Dimension> getDimension(String name) {
+        return this.dimensions.stream().filter(d -> d.getName().equals(name)).findFirst();
+    }
+
+    @Override
+    public Optional<PortalMeta> getPortal(String name) {
+        return this.portals.stream().filter(p -> p.getName().equals(name)).findFirst();
+    }
+
+    @Override
+    public Optional<String> getDestinationForPortal(String portalName) {
+        return Optional.ofNullable(this.destinations.getOrDefault(portalName, null));
+    }
+
+    @Override
+    public boolean createDimension(Dimension dimension) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return;
+        if (!connection.isPresent()) return false;
+
+        if (dimensions.stream().anyMatch(d -> d.getName().equals(dimension.getName()))) return false;
+        this.dimensions.add(dimension);
 
         try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO dimensions (`name`, `type`, meta, `default`)" +
+            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO dimensions (`name`, `default`, `type`, `meta`)" +
                     " VALUES (?, ?, ?, ?)");
 
             statement.setString(1, dimension.getName());
-            statement.setString(2, dimension.getType());
-            statement.setString(3, dimension.getMeta().orElse(null));
-            statement.setBoolean(4, dimension.isDefault());
+            statement.setBoolean(2, dimension.isDefault());
+            statement.setString(3, dimension.getType());
+            statement.setString(4, dimension.getMeta().orElse(""));
 
             statement.execute();
             statement.close();
             connection.get().close();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override
-    public void removeDimension(String name) {
+    public boolean removeDimension(String name) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return;
+        if (!connection.isPresent()) return false;
+
+        Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equals(name)).findFirst();
+        if (!dimension.isPresent()) return false;
+        dimensions.remove(dimension.get());
 
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM dimensions WHERE `name`=?");
             statement.setString(1, name);
 
-            statement.execute();
             statement.close();
             connection.get().close();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 }

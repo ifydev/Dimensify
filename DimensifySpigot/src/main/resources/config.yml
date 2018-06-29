@@ -1,2 +1,11 @@
+storage: sqlite
+connection:
+  host: localhost
+  port: 3306
+  database: dimensify
+  username: dimensify
+  password: magicalpassword
+  file: dimensify.db
+
 preload_worlds: false
 worlds:

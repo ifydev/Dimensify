@@ -48,7 +48,7 @@ public class DimensifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal delete <name>";
 
     // General errors
-    public static final String PLUGIN_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Plugin not present?!";
+    public static final String DATABASE_HANDLER_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Database handler not present?!";
     public static final String WORLD_EXISTS = DIMENSIFY_PREFIX + "&c&lWorld '<WORLD>' already exists!";
     public static final String INVALID_WORLD = DIMENSIFY_PREFIX + "&c&lWorld '<WORLD>' doesn't exist.";
     public static final String INVALID_DIMENSION_TYPE = DIMENSIFY_PREFIX + "&c&lDimension type '<TYPE>' is invalid.";
@@ -66,7 +66,7 @@ public class DimensifyConstants {
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
     public static final String WORLD_CREATED = DIMENSIFY_PREFIX + "World '<WORLD>' created!";
-    public static final String WHOOSH = DIMENSIFY_PREFIX + "Whoosh!";
+    public static final String WHOOSH = "&a&lWhoosh!";
     public static final String WORLD_DELETED = DIMENSIFY_PREFIX + "World '<WORLD>' has been deleted!";
     public static final String YOU_HAVE_BEEN_SENT = DIMENSIFY_PREFIX + "You have been sent to <WORLD>!";
     public static final String PLAYER_HAS_BEEN_SENT = DIMENSIFY_PREFIX + "<PLAYER> has been sent to <WORLD>!";

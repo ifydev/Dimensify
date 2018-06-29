@@ -16,10 +16,10 @@ import java.util.List;
 public class WorldController {
 
     public void loadAllWorlds(List<String> worldNames, DimensifyMain plugin) {
-        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin), plugin));
+        worldNames.forEach(name -> loadWorld(new DimensifyWorld(name, plugin)));
     }
 
-    public void loadWorld(DimensifyWorld creator, DimensifyMain plugin) {
+    public void loadWorld(DimensifyWorld creator) {
         World world;
         try {
             world = creator.createWorld();
@@ -31,8 +31,7 @@ public class WorldController {
             System.out.println("World was null after generation.");
             return;
         }
-        DimensifyMain.get().ifPresent(main -> main.getLogger().info("Finished generating " + world.getName() + "!"));
-        plugin.getWorldNames().add(creator.name());
+        DimensifyMain.get().getLogger().info("Finished generating " + world.getName() + "!");
     }
 
     public boolean deleteWorld(String worldName) {

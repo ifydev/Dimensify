@@ -15,6 +15,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,29 +36,28 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
         try {
             storage.save(storageFile);
         } catch (IOException e) {
-            DimensifyMain.get().ifPresent(plugin -> plugin.getLogger().severe("Could not save storage config!"));
+            DimensifyMain.get().getLogger().severe("Could not save storage config!");
             e.printStackTrace();
         }
     }
 
     @Override
     public void initialize() {
-        Optional<DimensifyMain> plugin = DimensifyMain.get();
-        if (!plugin.isPresent()) return;
-        File data = plugin.get().getDataFolder();
+        DimensifyMain plugin = DimensifyMain.get();
+        File data = plugin.getDataFolder();
 
         // Ensure the files exist
         storageFile = new File(data, "storage.yml");
         if (!storageFile.exists()) {
             storageFile.getParentFile().mkdirs();
-            plugin.get().saveResource("storage.yml", false);
+            plugin.saveResource("storage.yml", false);
         }
         storage = new YamlConfiguration();
 
         try {
             storage.load(storageFile);
         } catch (InvalidConfigurationException | IOException e) {
-            plugin.get().getLogger().severe("Could not create storage.yml");
+            plugin.getLogger().severe("Could not create storage.yml");
             e.printStackTrace();
         }
     }
@@ -70,8 +71,8 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     public void reload() {
         this.drop();
 
-        loadPortals();
-        loadDimensions();
+        this.portals = this.getPortals();
+        this.dimensions = this.getDimensions();
     }
 
     @Override
@@ -81,10 +82,10 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     }
 
     @Override
-    public void createPortal(PortalMeta meta) {
+    public boolean createPortal(PortalMeta meta) {
         // Make sure this does not exist in the cache already
         Optional<PortalMeta> portal = this.portals.stream().filter(m -> m.getName().equals(meta.getName())).findFirst();
-        if (portal.isPresent()) return;
+        if (portal.isPresent()) return false;
         this.portals.add(meta);
 
         storage.set("portal." + meta.getName() + "x1", meta.getX1());
@@ -104,27 +105,33 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
         }
 
         saveStorage();
+        return true;
     }
 
     @Override
-    public void removePortal(String name) {
+    public boolean removePortal(String name) {
         // Make sure the portal exists in the cache.
         Optional<PortalMeta> meta = this.portals.stream().filter(m -> m.getName().equals(name)).findFirst();
-        if (!meta.isPresent()) return;
+        if (!meta.isPresent()) return false;
 
+        // Remove the portal from all caches
         this.portals.remove(meta.get());
+        this.destinations.remove(name);
 
+        // Remove the portal from the configs
         storage.set("portal." + name, null);
         storage.set("link." + name, null);
 
         saveStorage();
+        return true;
     }
 
     @Override
-    public void loadPortals() {
+    public List<PortalMeta> getPortals() {
         ConfigurationSection portalSection = storage.getConfigurationSection("portal");
-        if (portalSection == null) return;
+        if (portalSection == null) return Collections.emptyList();
 
+        List<PortalMeta> portals = new ArrayList<>();
         portalSection.getKeys(false).forEach(key -> {
             String base = key + ".";
             if (!portalSection.isInt(base + "x1") || !portalSection.isInt(base + "y1") || !portalSection.isInt(base + "z1") ||
@@ -153,12 +160,22 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
 
             portals.add(new SpigotPortalMeta(key, x1, x2, y1, y2, z1, z2, world, destination, portalType));
         });
+        return portals;
     }
 
     @Override
-    public void createDimension(Dimension dimension) {
+    public void setPortalDestination(String portal, String destination) {
+        this.destinations.put(portal, destination);
+
+        storage.set("link." + portal, destination);
+        saveStorage();
+    }
+
+    @Override
+    public boolean createDimension(Dimension dimension) {
         Optional<Dimension> d = this.dimensions.stream().filter(dim -> dim.getName().equals(dimension.getName())).findFirst();
-        if (d.isPresent()) return;
+        if (d.isPresent()) return false;
+        this.dimensions.add(dimension);
 
         String base = "dimensions." + dimension.getName();
         this.storage.set(base + ".name", dimension.getName());
@@ -167,13 +184,14 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
         this.storage.set(base + ".default", dimension.isDefault());
 
         saveStorage();
+        return true;
     }
 
     @Override
-    public void removeDimension(String name) {
+    public boolean removeDimension(String name) {
         // Make sure it's cached
         Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equals(name)).findFirst();
-        if (!dimension.isPresent()) return;
+        if (!dimension.isPresent()) return false;
 
         // Remove from the cache
         this.dimensions.remove(dimension.get());
@@ -181,12 +199,14 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
         // Remove from file
         storage.set("dimensions." + name, null);
         saveStorage();
+        return true;
     }
 
     @Override
-    public void loadDimensions() {
+    public List<Dimension> getDimensions() {
         ConfigurationSection dimensions = storage.getConfigurationSection("dimensions");
 
+        List<Dimension> loadedDimensions = new ArrayList<>();
         dimensions.getKeys(false).forEach(dimension -> {
             if (!dimensions.isString(dimension + ".name") || !dimensions.isString(dimension + "type") ||
                     !dimensions.isString(dimension + "meta") || !dimensions.isBoolean(dimension + "default")) {
@@ -198,7 +218,23 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
             String meta = dimensions.getString(dimension + ".meta", null);
             boolean isDefault = dimensions.getBoolean(dimension + ".default");
 
-            this.dimensions.add(new Dimension(name, type, Optional.ofNullable(meta), isDefault));
+            loadedDimensions.add(new Dimension(name, type, Optional.ofNullable(meta), isDefault));
         });
+        return loadedDimensions;
+    }
+
+    @Override
+    public Optional<Dimension> getDimension(String name) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<PortalMeta> getPortal(String name) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<String> getDestinationForPortal(String portalName) {
+        return Optional.empty();
     }
 }

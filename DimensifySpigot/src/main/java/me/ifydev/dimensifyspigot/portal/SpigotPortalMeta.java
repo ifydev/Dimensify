@@ -15,8 +15,8 @@ import java.util.Optional;
 public class SpigotPortalMeta extends PortalMeta {
 
     public SpigotPortalMeta(String name, PortalCorners corners, PortalType type, Optional<String> destination) {
-        super(name, corners.getFirst().getBlockX(), corners.getFirst().getBlockY(), corners.getFirst().getBlockZ(),
-                corners.getSecond().getBlockX(), corners.getSecond().getBlockY(), corners.getSecond().getBlockZ(),
+        super(name, corners.getFirst().getBlockX(), corners.getSecond().getBlockX(), corners.getFirst().getBlockY(),
+                corners.getSecond().getBlockY(), corners.getFirst().getBlockZ(), corners.getSecond().getBlockZ(),
                 corners.getFirst().getWorld().getName(), destination, type);
     }
 

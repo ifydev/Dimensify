@@ -5,8 +5,7 @@ import lombok.RequiredArgsConstructor;
 import me.ifydev.dimensify.api.dimensions.Dimension;
 import me.ifydev.dimensify.api.portal.PortalMeta;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Innectic
@@ -15,8 +14,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public abstract class AbstractDataHandler {
 
-    @Getter protected List<Dimension> dimensions = new ArrayList<>();
-    @Getter protected List<PortalMeta> portals = new ArrayList<>();
+    protected List<Dimension> dimensions = new ArrayList<>();
+    protected List<PortalMeta> portals = new ArrayList<>();
+    protected Map<String, String> destinations = new HashMap<>();
     @Getter protected final ConnectionInformation connectionInformation;
 
     /**
@@ -41,11 +41,17 @@ public abstract class AbstractDataHandler {
      */
     public abstract void drop();
 
-    public abstract void createPortal(PortalMeta meta);
-    public abstract void removePortal(String name);
-    public abstract void loadPortals();
+    public abstract boolean createPortal(PortalMeta meta);
+    public abstract boolean removePortal(String name);
+    public abstract List<PortalMeta> getPortals();
 
-    public abstract void createDimension(Dimension dimension);
-    public abstract void removeDimension(String name);
-    public abstract void loadDimensions();
+    public abstract void setPortalDestination(String portal, String destination);
+
+    public abstract boolean createDimension(Dimension dimension);
+    public abstract boolean removeDimension(String name);
+    public abstract List<Dimension> getDimensions();
+
+    public abstract Optional<Dimension> getDimension(String name);
+    public abstract Optional<PortalMeta> getPortal(String name);
+    public abstract Optional<String> getDestinationForPortal(String portalName);
 }
