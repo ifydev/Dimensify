@@ -22,7 +22,7 @@ public abstract class AbstractDataHandler {
     /**
      * Setup anything that's needed before we can connect.
      */
-    public abstract void initialize();
+    public abstract void initialize(String defaultWorld);
 
     /**
      * Connect to whatever kind of handler we're going for.
@@ -45,7 +45,7 @@ public abstract class AbstractDataHandler {
     public abstract boolean removePortal(String name);
     public abstract List<PortalMeta> getPortals();
 
-    public abstract void setPortalDestination(String portal, String destination);
+    public abstract boolean setPortalDestination(String portal, String destination);
 
     public abstract boolean createDimension(Dimension dimension);
     public abstract boolean removeDimension(String name);

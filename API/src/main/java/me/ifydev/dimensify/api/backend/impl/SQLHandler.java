@@ -18,6 +18,8 @@ public class SQLHandler extends AbstractDataHandler {
     private boolean isUsingSQLite = false;
     private String baseConnectionUrl;
 
+    private String defaultWorld;
+
     public SQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
 
@@ -49,8 +51,9 @@ public class SQLHandler extends AbstractDataHandler {
     }
 
     @Override
-    public void initialize() {
+    public void initialize(String defaultWorld) {
         this.dimensions = new ArrayList<>();
+        this.defaultWorld = defaultWorld;
 
         try {
             Optional<Connection> connection = getConnection();
@@ -185,9 +188,9 @@ public class SQLHandler extends AbstractDataHandler {
     }
 
     @Override
-    public void setPortalDestination(String portal, String destination) {
+    public boolean setPortalDestination(String portal, String destination) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return;
+        if (!connection.isPresent()) return false;
 
         this.destinations.put(portal, destination);
 
@@ -199,9 +202,11 @@ public class SQLHandler extends AbstractDataHandler {
 
             statement.close();
             connection.get().close();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -227,12 +232,13 @@ public class SQLHandler extends AbstractDataHandler {
 
     @Override
     public Optional<Dimension> getDimension(String name) {
-        return this.dimensions.stream().filter(d -> d.getName().equals(name)).findFirst();
+        if (name.equalsIgnoreCase(defaultWorld)) return Optional.of(new Dimension(defaultWorld, "", Optional.empty(), false));
+        return this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override
     public Optional<PortalMeta> getPortal(String name) {
-        return this.portals.stream().filter(p -> p.getName().equals(name)).findFirst();
+        return this.portals.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override
@@ -245,7 +251,7 @@ public class SQLHandler extends AbstractDataHandler {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) return false;
 
-        if (dimensions.stream().anyMatch(d -> d.getName().equals(dimension.getName()))) return false;
+        if (dimensions.stream().anyMatch(d -> d.getName().equalsIgnoreCase(dimension.getName()))) return false;
         this.dimensions.add(dimension);
 
         try {
@@ -272,7 +278,7 @@ public class SQLHandler extends AbstractDataHandler {
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) return false;
 
-        Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equals(name)).findFirst();
+        Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
         if (!dimension.isPresent()) return false;
         dimensions.remove(dimension.get());
 
