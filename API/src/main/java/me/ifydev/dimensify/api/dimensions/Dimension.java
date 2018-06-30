@@ -2,6 +2,7 @@ package me.ifydev.dimensify.api.dimensions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Optional;
 
@@ -16,5 +17,5 @@ public class Dimension {
     private String name;
     private String type;
     private Optional<String> meta;
-    private boolean isDefault;
+    @Setter private boolean isDefault;
 }

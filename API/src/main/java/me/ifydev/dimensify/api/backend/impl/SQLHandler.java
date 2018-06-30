@@ -53,7 +53,6 @@ public class SQLHandler extends AbstractDataHandler {
     @Override
     public void initialize(String defaultWorld) {
         this.dimensions = new ArrayList<>();
-        this.defaultWorld = defaultWorld;
 
         try {
             Optional<Connection> connection = getConnection();
@@ -83,6 +82,10 @@ public class SQLHandler extends AbstractDataHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        this.defaultWorld = defaultWorld;
+        String defaultDimension = this.getDefaultDimension(true);
+        if (!defaultDimension.equals("")) this.defaultWorld = defaultDimension;
     }
 
     @Override
@@ -242,8 +245,38 @@ public class SQLHandler extends AbstractDataHandler {
     }
 
     @Override
-    public Optional<String> getDestinationForPortal(String portalName) {
-        return Optional.ofNullable(this.destinations.getOrDefault(portalName, null));
+    public boolean setDefaultDimension(String name) {
+        this.dimensions.stream().filter(Dimension::isDefault).findFirst().ifPresent(dim -> dim.setDefault(false));
+
+        Optional<Dimension> dimension = dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
+        if (!dimension.isPresent()) return false;
+
+        dimension.get().setDefault(true);
+        this.defaultWorld = dimension.get().getName();
+
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return false;
+        try {
+            PreparedStatement removeCurrent = connection.get().prepareStatement("UPDATE dimensions SET `default`=0 WHERE `default`=1");
+            removeCurrent.execute();
+            removeCurrent.close();
+
+            PreparedStatement update = connection.get().prepareStatement("UPDATE dimensions SET `default`=1 WHERE `name`=?");
+            update.setString(1, dimension.get().getName());
+            update.execute();
+            update.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    @Override
+    public String getDefaultDimension(boolean skipCache) {
+        if (skipCache)
+            for (Dimension dimension : this.getDimensions()) if (dimension.isDefault()) return dimension.getName();
+        return defaultWorld;
     }
 
     @Override

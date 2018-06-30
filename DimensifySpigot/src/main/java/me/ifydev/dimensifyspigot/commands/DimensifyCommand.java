@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -158,6 +159,11 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
                 response.stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
+                return;
+            } else if (args[0].equalsIgnoreCase("default")) {
+                String response = BasicHandler.setOrGetDefaultWorld(args.length >= 2 ? Optional.of(args[1]) :Optional.empty());
+                response = ColorUtil.makeReadable(response);
+                sender.sendMessage(response);
                 return;
             }
             // Send help

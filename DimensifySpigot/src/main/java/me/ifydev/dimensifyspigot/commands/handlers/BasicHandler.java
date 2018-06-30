@@ -144,4 +144,17 @@ public class BasicHandler {
                 .replace("<DEFAULT>", String.valueOf(dim.isDefault())))
                 .collect(Collectors.toList());
     }
+
+    public static String setOrGetDefaultWorld(Optional<String> world) {
+        DimensifyMain plugin = DimensifyMain.get();
+        Optional<AbstractDataHandler> db = plugin.getApi().getDatabaseHandler();
+        if (!db.isPresent()) return DimensifyConstants.COULD_NOT_CONNECT_TO_DATABASE;
+
+        if (!world.isPresent()) {
+            String defaultDimension = db.get().getDefaultDimension(false);
+            return DimensifyConstants.DEFAULT_WORLD_FORMAT.replace("<WORLD>", defaultDimension);
+        }
+        boolean result = db.get().setDefaultDimension(world.get());
+        return result ? DimensifyConstants.DEFAULT_WORLD_SET.replace("<WORLD>", world.get()) : DimensifyConstants.COULD_NOT_SET_DEFAULT_WORLD;
+    }
 }

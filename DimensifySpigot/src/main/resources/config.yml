@@ -13,6 +13,8 @@ connection:
   password: magicalpassword
   file: dimensify
 
+send_players_to_default_world_on_login: false
+
 # Setting `permission_restrict_dimensions` to `true` will make all dimensions require permissions in
 # the following format: `dimension.<dimension_name>.allow` or `dimension.<dimension_name>.deny`.
 # If the permission is not present on the player, then we'll use the value from `default_dimension_restriction`.

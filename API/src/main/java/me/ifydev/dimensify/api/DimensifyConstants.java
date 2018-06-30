@@ -78,6 +78,9 @@ public class DimensifyConstants {
     public static final String PORTAL_LIST_FORMAT = "&2&l<NAME> - &9&lX: <X>, Y: <Y>, Z: <Z> - &e&lDimension: <DIMENSION> - &3&lDestination: <DESTINATION>";
     public static final String DIMENSION_LIST_FORMAT = "&2&l<NAME> - Type: <TYPE> - Default?: <DEFAULT>";
     public static final String THERE_ARE_NONE = DIMENSIFY_PREFIX + "&2&lThere are no <ITEM>!";
+    public static final String DEFAULT_WORLD_FORMAT = DIMENSIFY_PREFIX + "&2&lDefault world: <WORLD>";
+    public static final String DEFAULT_WORLD_SET = DIMENSIFY_PREFIX + "&2&lDefault world set to: <WORLD>!";
+    public static final String COULD_NOT_SET_DEFAULT_WORLD = DIMENSIFY_PREFIX + "&2&lCould not set default world.";
 
     // Help response
     // TODO: This should automatically paginate.
@@ -91,7 +94,8 @@ public class DimensifyConstants {
                     "&a&l/dimensify delete <world_name>",
                     "&a&l/dimensify default [world_name]",
                     "&a&l/dimensify list",
-                    "&a&l/dimensify link <source_portal> <destination_dimension>"
+                    "&a&l/dimensify link <source_portal> <destination_dimension>",
+                    "&a&l/dimensify portal <list|link|create|remove> [args...]"
             )
     );
 }

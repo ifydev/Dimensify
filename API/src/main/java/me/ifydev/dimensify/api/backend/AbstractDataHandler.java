@@ -53,5 +53,7 @@ public abstract class AbstractDataHandler {
 
     public abstract Optional<Dimension> getDimension(String name);
     public abstract Optional<PortalMeta> getPortal(String name);
-    public abstract Optional<String> getDestinationForPortal(String portalName);
+
+    public abstract boolean setDefaultDimension(String name);
+    public abstract String getDefaultDimension(boolean skipCache);
 }

@@ -57,6 +57,7 @@ public class DimensifyMain extends JavaPlugin {
 
     @Getter private boolean allowEntryByDefault = true;
     @Getter private boolean permissionRestrictDimensions = false;
+    @Getter private boolean sendPlayersToDefaultWorldOnLogin = false;
 
     @Override
     public void onEnable() {
@@ -87,6 +88,7 @@ public class DimensifyMain extends JavaPlugin {
         preloadWorlds = getConfig().getBoolean("preload_worlds", true);
         allowEntryByDefault = getConfig().getBoolean("default_dimension_restriction", true);
         permissionRestrictDimensions= getConfig().getBoolean("permission_restrict_dimensions", false);
+        sendPlayersToDefaultWorldOnLogin = getConfig().getBoolean("send_players_to_default_world_on_login", false);
 
         if (preloadWorlds)
             getConfig().getStringList("world_preload").forEach(name -> worldController.loadWorld(new DimensifyWorld(name, this)));

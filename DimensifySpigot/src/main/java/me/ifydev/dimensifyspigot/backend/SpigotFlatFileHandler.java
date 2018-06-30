@@ -47,7 +47,10 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     public void initialize(String defaultWorld) {
         DimensifyMain plugin = DimensifyMain.get();
         File data = plugin.getDataFolder();
+
         this.defaultWorld = defaultWorld;
+        String defaultDimension = this.getDefaultDimension(true);
+        if (!defaultDimension.equals("")) this.defaultWorld = defaultDimension;
 
         // Ensure the files exist
         storageFile = new File(data, plugin.getConfig().getString("connection.file", "storage.yml"));
@@ -239,7 +242,22 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
     }
 
     @Override
-    public Optional<String> getDestinationForPortal(String portalName) {
-        return Optional.ofNullable(destinations.getOrDefault(portalName, null));
+    public boolean setDefaultDimension(String name) {
+        this.dimensions.stream().filter(Dimension::isDefault).findFirst().ifPresent(dim -> dim.setDefault(false));
+
+        dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst().ifPresent(dim -> {
+            dim.setDefault(true);
+            this.defaultWorld = dim.getName();
+
+            storage.set("dimensions." + dim.getName() + ".default", true);
+        });
+        return true;
+    }
+
+    @Override
+    public String getDefaultDimension(boolean skipCache) {
+        if (skipCache)
+            for (Dimension dimension : this.getDimensions()) if (dimension.isDefault()) return dimension.getName();
+        return defaultWorld;
     }
 }
