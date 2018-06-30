@@ -1,10 +1,15 @@
 package me.ifydev.dimensifyspigot.world;
 
+import me.ifydev.dimensify.api.DimensifyConstants;
 import me.ifydev.dimensify.api.dimensions.Dimension;
 import me.ifydev.dimensifyspigot.DimensifyMain;
+import me.ifydev.dimensifyspigot.util.ColorUtil;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,5 +69,21 @@ public class WorldController {
             return false;
         }
         return true;
+    }
+
+    public static void enterDimension(Player player, String dimension) {
+        DimensifyMain plugin = DimensifyMain.get();
+
+        if (plugin.isPermissionRestrictDimensions()) {
+            boolean playerIsAllowedToEnterDimension = player.hasPermission("dimension." + dimension + ".allow") || plugin.isAllowEntryByDefault();
+            if (!playerIsAllowedToEnterDimension) {
+                player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CANNOT_ENTER_THIS_DIMENSION));
+                return;
+            }
+        }
+
+        World world = plugin.getWorldController().getWorld(dimension);
+        player.teleport(world.getSpawnLocation());
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ColorUtil.makeReadable(DimensifyConstants.WHOOSH)));
     }
 }

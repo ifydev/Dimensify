@@ -16,6 +16,7 @@ connection:
 # Setting `permission_restrict_dimensions` to `true` will make all dimensions require permissions in
 # the following format: `dimension.<dimension_name>.allow` or `dimension.<dimension_name>.deny`.
 # If the permission is not present on the player, then we'll use the value from `default_dimension_restriction`.
+# Please note, permission restrictions do not take effect when a player is sent to the dimension.
 permission_restrict_dimensions: false
 # `true` allows entry by default, `false` denies entry by default.
 default_dimension_restriction: true

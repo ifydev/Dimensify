@@ -33,6 +33,7 @@ import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import me.ifydev.dimensifyspigot.events.PlayerPortal;
 import me.ifydev.dimensifyspigot.portal.PortalRegistry;
 import me.ifydev.dimensifyspigot.util.Verifier;
+import me.ifydev.dimensifyspigot.world.DimensifyWorld;
 import me.ifydev.dimensifyspigot.world.WorldController;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
@@ -84,8 +85,11 @@ public class DimensifyMain extends JavaPlugin {
         portalRegistry = new PortalRegistry();
 
         preloadWorlds = getConfig().getBoolean("preload_worlds", true);
+        allowEntryByDefault = getConfig().getBoolean("default_dimension_restriction", true);
+        permissionRestrictDimensions= getConfig().getBoolean("permission_restrict_dimensions", false);
 
-//        if (preloadWorlds) worldController.loadAllWorlds(allWorlds, this);
+        if (preloadWorlds)
+            getConfig().getStringList("world_preload").forEach(name -> worldController.loadWorld(new DimensifyWorld(name, this)));
 
         registerListeners();
         registerCommands();

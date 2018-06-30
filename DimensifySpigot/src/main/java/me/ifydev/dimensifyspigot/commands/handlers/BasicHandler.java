@@ -9,6 +9,7 @@ import me.ifydev.dimensifyspigot.DimensifyMain;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
 import me.ifydev.dimensifyspigot.util.MiscUtil;
 import me.ifydev.dimensifyspigot.world.DimensifyWorld;
+import me.ifydev.dimensifyspigot.world.WorldController;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -95,11 +96,7 @@ public class BasicHandler {
         // Make sure this dimension actually exists
         if (!plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(dimension).isPresent()).orElse(false))
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
-        World destination = plugin.getWorldController().getWorld(dimension);
-        player.teleport(destination.getSpawnLocation());
-
-        // Send the really cool whoosh message
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ColorUtil.makeReadable(DimensifyConstants.WHOOSH)));
+        WorldController.enterDimension(player, dimension);
         return "";
     }
 

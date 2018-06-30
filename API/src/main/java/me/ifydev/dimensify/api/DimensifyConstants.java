@@ -64,6 +64,7 @@ public class DimensifyConstants {
     public static final String PORTAL_NAME_ALREADY_USED = DIMENSIFY_PREFIX + "&c&lPortal name '<NAME>' already used!";
     public static final String CANNOT_DELETE_MAIN_WORLD = DIMENSIFY_PREFIX + "&c&lCannot delete the main world!";
     public static final String COULD_NOT_CONNECT_TO_DATABASE = DIMENSIFY_PREFIX + "&c&lCannot connect to the database!";
+    public static final String CANNOT_ENTER_THIS_DIMENSION = DIMENSIFY_PREFIX + "&c&lYou don't have permission to enter this domain!";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";

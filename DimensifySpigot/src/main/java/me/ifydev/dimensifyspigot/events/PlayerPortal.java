@@ -4,6 +4,7 @@ import me.ifydev.dimensify.api.DimensifyConstants;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
 import me.ifydev.dimensifyspigot.world.DimensifyWorld;
+import me.ifydev.dimensifyspigot.world.WorldController;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -36,10 +37,7 @@ public class PlayerPortal implements Listener {
                     // Load the world, since it's not here
                     plugin.getWorldController().loadWorld(new DimensifyWorld(link, plugin));
                 }
-
-                World world = Bukkit.getWorld(link);
-                player.teleport(world.getSpawnLocation());
-                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ColorUtil.makeReadable(DimensifyConstants.WHOOSH)));
+                WorldController.enterDimension(player, link);
             });
         });
     }
