@@ -202,7 +202,6 @@ public class DimensifyCommand implements CommandExecutor {
                         String response = ColorUtil.makeReadable(PortalHandler.linkPortal(portal, destination));
                         sender.sendMessage(response);
                     });
-
                 } else if (args[1].equalsIgnoreCase("list")) {
                     if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_LIST_PORTALS)) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -267,7 +266,7 @@ public class DimensifyCommand implements CommandExecutor {
                     String result = ColorUtil.makeReadable(BasicHandler.unloadDimension(dimension, save));
                     sender.sendMessage(result);
                 });
-            }
+            } else sendHelp(sender);
         });
 
         return false;

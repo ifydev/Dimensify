@@ -112,7 +112,7 @@ public class WorldController {
         DimensifyMain plugin = DimensifyMain.get();
 
         if (plugin.isPermissionRestrictDimensions()) {
-            boolean playerIsAllowedToEnterDimension = player.hasPermission("dimension." + dimension + ".allow") || plugin.isAllowEntryByDefault();
+            boolean playerIsAllowedToEnterDimension = (player.hasPermission("dimension." + dimension.getName() + ".allow") && !player.hasPermission("dimension." + dimension.getName() + ".deny")) || plugin.isAllowEntryByDefault();
             if (!playerIsAllowedToEnterDimension) {
                 player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.CANNOT_ENTER_THIS_DIMENSION));
                 return;
