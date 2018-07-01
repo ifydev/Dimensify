@@ -119,6 +119,8 @@ Arguments:
 
 The name of the portal that you have created previously using `/dimensify portal create`
 
+Pre-existing links on portals can be overriden using this command.
+
 * `destination_dimension`
 
 The name of the dimension that the portal should send the player to
