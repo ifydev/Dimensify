@@ -20,7 +20,7 @@ public class PlayerPortal implements Listener {
         DimensifyMain plugin = DimensifyMain.get();
 
         Player player = e.getPlayer();
-        plugin.getPortalRegistry().findCornersFromPosition(player.getLocation()).ifPresent(corners -> {
+        plugin.getPortalRegistry().findCornersFromPosition(e.getFrom()).ifPresent(corners -> {
             e.setCancelled(true);
 
             if (!corners.getDestination().isPresent()) return;

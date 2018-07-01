@@ -11,7 +11,7 @@ connection:
   database: dimensify
   username: dimensify
   password: magicalpassword
-  file: dimensify
+  file: dimensify.db
 
 send_players_to_default_world_on_login: false
 
