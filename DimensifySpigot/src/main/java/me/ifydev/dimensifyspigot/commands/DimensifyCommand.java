@@ -33,13 +33,19 @@ public class DimensifyCommand implements CommandExecutor {
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (args.length < 1) {
-                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_HEADER));
-                DimensifyConstants.HELP_RESPONSE.forEach(messages ->
-                        messages.forEach(message -> sender.sendMessage(ColorUtil.makeReadable(message))));
-                sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_FOOTER));
+                sendHelp(sender);
                 return;
             }
-            if (args[0].equalsIgnoreCase("create")) {
+
+            if (args[0].equalsIgnoreCase("help")) {
+                int page = 0;
+                if (args.length >= 2) {
+                    try {
+                        page = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException ignored) {}
+                }
+                sendHelp(sender, page);
+            } else if (args[0].equalsIgnoreCase("create")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_CREATE_DIMENSION)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
                     return;
@@ -59,8 +65,6 @@ public class DimensifyCommand implements CommandExecutor {
                     result = ColorUtil.makeReadable(result);
                     sender.sendMessage(result);
                 });
-
-                return;
             } else if (args[0].equalsIgnoreCase("go")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_GO)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -84,7 +88,6 @@ public class DimensifyCommand implements CommandExecutor {
                     if (result.equals("")) return;
                     player.sendMessage(ColorUtil.makeReadable(result));
                 });
-                return;
             } else if (args[0].equalsIgnoreCase("delete")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_REMOVE_DIMENSION)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -100,7 +103,6 @@ public class DimensifyCommand implements CommandExecutor {
                     String result = ColorUtil.makeReadable(BasicHandler.deleteDimension(worldName));
                     sender.sendMessage(result);
                 });
-                return;
             } else if (args[0].equalsIgnoreCase("send")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_SEND)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -115,7 +117,6 @@ public class DimensifyCommand implements CommandExecutor {
                     String result = ColorUtil.makeReadable(BasicHandler.sendPlayerToDimension(args[1], args[2]));
                     sender.sendMessage(result);
                 });
-                return;
             } else if (args[0].equalsIgnoreCase("portal")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_PORTAL)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -147,7 +148,6 @@ public class DimensifyCommand implements CommandExecutor {
 
                     String response = ColorUtil.makeReadable(PortalHandler.createPortal(player, block, portalName));
                     player.sendMessage(response);
-                    return;
                 } else if (args[1].equalsIgnoreCase("delete")) {
                     if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_REMOVE_PORTAL)) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -161,7 +161,6 @@ public class DimensifyCommand implements CommandExecutor {
 
                     String response = ColorUtil.makeReadable(PortalHandler.deletePortal(args[2]));
                     sender.sendMessage(response);
-                    return;
                 } else if (args[1].equalsIgnoreCase("link")) {
                     if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_LINK)) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -180,7 +179,6 @@ public class DimensifyCommand implements CommandExecutor {
                         sender.sendMessage(response);
                     });
 
-                    return;
                 } else if (args[1].equalsIgnoreCase("list")) {
                     if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_LIST_PORTALS)) {
                         sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -194,7 +192,6 @@ public class DimensifyCommand implements CommandExecutor {
                         return;
                     }
                     response.stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
-                    return;
                 }
             } else if (args[0].equalsIgnoreCase("list")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_LIST_DIMENSIONS)) {
@@ -209,7 +206,6 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
                 response.stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage);
-                return;
             } else if (args[0].equalsIgnoreCase("default")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_DEFAULT)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -219,7 +215,6 @@ public class DimensifyCommand implements CommandExecutor {
                 String response = BasicHandler.setOrGetDefaultWorld(args.length >= 2 ? Optional.of(args[1]) :Optional.empty());
                 response = ColorUtil.makeReadable(response);
                 sender.sendMessage(response);
-                return;
             } else if (args[0].equalsIgnoreCase("cache")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_CACHE)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -232,7 +227,6 @@ public class DimensifyCommand implements CommandExecutor {
                 result = ColorUtil.makeReadable(result);
 
                 sender.sendMessage(result);
-                return;
             } else if (args[0].equalsIgnoreCase("unload")) {
                 if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_UNLOAD)) {
                     sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
@@ -249,14 +243,32 @@ public class DimensifyCommand implements CommandExecutor {
                     String result = ColorUtil.makeReadable(BasicHandler.unloadDimension(dimension, save));
                     sender.sendMessage(result);
                 });
-                return;
             }
-            // Send help
-            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_HEADER));
-            DimensifyConstants.HELP_RESPONSE.forEach(section -> section.stream().map(ColorUtil::makeReadable).forEach(sender::sendMessage));
-            sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_FOOTER));
         });
 
         return false;
+    }
+
+    private void sendResponse(List<String> responses, CommandSender source) {
+        responses.forEach(response -> sendResponse(response, source));
+    }
+
+    private void sendResponse(String response, CommandSender source) {
+        source.sendMessage(ColorUtil.makeReadable(response));  // XXX: Probably don't need ColorUtil anymore...
+    }
+
+    private void sendHelp(CommandSender player) {
+        sendHelp(player, 0);
+    }
+
+    private void sendHelp(CommandSender player, int page) {
+        if (page < 0 || page > DimensifyConstants.HELP_RESPONSE.size()) {
+            sendResponse(DimensifyConstants.INVALID_HELP_PAGE, player);
+            return;
+        }
+        page = page == 0 ? page : page - 1; // what
+        sendResponse(DimensifyConstants.DIMENSIFY_HELP_HEADER, player);
+        sendResponse(DimensifyConstants.HELP_RESPONSE.get(page), player);
+        sendResponse(DimensifyConstants.DIMENSIFY_HELP_FOOTER, player);
     }
 }

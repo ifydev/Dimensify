@@ -71,6 +71,7 @@ public class DimensifyConstants {
     public static final String THIS_DIMENSION_DOES_NOT_EXIST_ANYMORE = DIMENSIFY_PREFIX + "&c&lThis dimension does not exist anymore!";
     public static final String COULD_NOT_SET_DEFAULT_WORLD = DIMENSIFY_PREFIX + "&2&lCould not set default world.";
     public static final String COULD_NOT_UNLOAD_DIMENSION = DIMENSIFY_PREFIX + "&2&lCould not unload dimension!";
+    public static final String INVALID_HELP_PAGE = DIMENSIFY_PREFIX + "&2&lInvalid help page!";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
