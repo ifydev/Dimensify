@@ -48,11 +48,11 @@ public class PlayerPortal implements Listener {
         // We cancel this event if they're within one of our portals, so that we can send them ourselves.
         DimensifyMain plugin = DimensifyMain.get();
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        plugin.getPortalRegistry().findCornersFromPosition(e.getFrom()).ifPresent(corners -> {
+            e.setCancelled(true);
 
-            Player player = e.getPlayer();
-            plugin.getPortalRegistry().findCornersFromPosition(e.getFrom()).ifPresent(corners -> {
-                e.setCancelled(true);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                Player player = e.getPlayer();
 
                 if (!corners.getDestination().isPresent()) return;
 

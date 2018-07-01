@@ -327,6 +327,7 @@ public class SQLHandler extends AbstractDataHandler {
     public String getDefaultDimension(boolean skipCache) {
         if (!skipCache)
             for (Dimension dimension : this.getDimensions(false)) if (dimension.isDefault()) return dimension.getName();
+
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) return "";
 
@@ -334,10 +335,13 @@ public class SQLHandler extends AbstractDataHandler {
             PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM dimensions WHERE `default`=1");
             ResultSet results = statement.executeQuery();
 
-            if (results.first()) return results.getString("name");
+            String name = results.next() ? results.getString("name") : "";
+
             results.close();
             statement.close();
             connection.get().close();
+
+            return name;
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -49,7 +49,7 @@ Arguments:
   - normal
   - the_end
 
-## ``/dimensify send <player> <dimension>`
+## `/dimensify send <player> <dimension>`
 
 Send a player to a dimension.
 
