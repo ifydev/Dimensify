@@ -1,7 +1,6 @@
 package me.ifydev.dimensifyspigot.events;
 
 import me.ifydev.dimensifyspigot.DimensifyMain;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,9 +21,7 @@ public class PlayerJoin implements Listener {
         if (plugin.isSendPlayersToDefaultWorldOnLogin()) {
             plugin.getApi().getDatabaseHandler().ifPresent(db -> {
                 String dimension = db.getDefaultDimension(false);
-
-                World world = plugin.getWorldController().getWorld(dimension);
-                player.teleport(world.getSpawnLocation());
+                plugin.getWorldController().getWorld(dimension).ifPresent(dim -> player.teleport(dim.getSpawnLocation()));
             });
         }
     }

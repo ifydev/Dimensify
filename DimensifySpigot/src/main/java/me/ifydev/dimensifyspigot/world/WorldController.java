@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * @author Innectic
@@ -20,13 +21,17 @@ import java.io.IOException;
  */
 public class WorldController {
 
-    public World getWorld(String name) {
+    public Optional<World> getWorld(String name) {
+        return getWorld(name, false);
+    }
+
+    public Optional<World> getWorld(String name, boolean andMake) {
         World world = Bukkit.getWorld(name);
-        if (world == null) {
+        if (world == null && andMake) {
             this.loadWorld(new DimensifyWorld(name, DimensifyMain.get()));
             world = Bukkit.getWorld(name);
         }
-        return world;
+        return Optional.ofNullable(world);
     }
 
     public void loadWorld(DimensifyWorld creator) {
@@ -86,9 +91,5 @@ public class WorldController {
 
         player.teleport(dimension.getSpawnLocation());
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ColorUtil.makeReadable(DimensifyConstants.WHOOSH)));
-    }
-
-    public static void enterDimension(Player player, String dimension) {
-        enterDimension(player, DimensifyMain.get().getWorldController().getWorld(dimension));
     }
 }

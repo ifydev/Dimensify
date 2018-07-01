@@ -86,6 +86,7 @@ public class SQLHandler extends AbstractDataHandler {
 
             connection.close();
         } catch (SQLException e) {
+            System.out.println("Encountered an error while trying to setup the database:");
             e.printStackTrace();
         }
 

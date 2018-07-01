@@ -62,8 +62,8 @@ public class PortalHandler {
         if (!db.get().getPortal(portal).isPresent())
             return DimensifyConstants.PORTAL_DOES_NOT_EXIST.replace("<PORTAL>", portal);
         // And make sure the world exists
-        World world = plugin.getWorldController().getWorld(destination);
-        if (world == null)
+        Optional<World> world = plugin.getWorldController().getWorld(destination);
+        if (!world.isPresent())
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", destination);
 
         return db.get().setPortalDestination(portal, destination)

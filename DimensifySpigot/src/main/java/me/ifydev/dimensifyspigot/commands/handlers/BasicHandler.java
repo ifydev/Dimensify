@@ -94,10 +94,10 @@ public class BasicHandler {
     public static String goToDimension(Player player, String dimension) {
         DimensifyMain plugin = DimensifyMain.get();
         // Make sure this dimension actually exists
-        World world = plugin.getWorldController().getWorld(dimension);
-        if (world == null)
+        Optional<World> world = plugin.getWorldController().getWorld(dimension);
+        if (!world.isPresent())
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
-        WorldController.enterDimension(player, world);
+        WorldController.enterDimension(player, world.get());
         return "";
     }
 
@@ -121,16 +121,16 @@ public class BasicHandler {
         DimensifyMain plugin = DimensifyMain.get();
 
         // Make sure the player and world exist
-        World world = plugin.getWorldController().getWorld(dimension);
-        if (world == null)
+        Optional<World> world = plugin.getWorldController().getWorld(dimension);
+        if (!world.isPresent())
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
         Player player = Bukkit.getPlayerExact(playerName);
         if (player == null) return DimensifyConstants.INVALID_PLAYER.replace("<PLAYER>", playerName);
 
         // Send the player to the dimension
-        player.teleport(world.getSpawnLocation());
+        player.teleport(world.get().getSpawnLocation());
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ColorUtil.makeReadable(DimensifyConstants.WHOOSH)));
-        return DimensifyConstants.PLAYER_HAS_BEEN_SENT.replace("<PLAYER>", player.getName());
+        return DimensifyConstants.PLAYER_HAS_BEEN_SENT.replace("<PLAYER>", player.getName()).replace("<WORLD>", dimension);
     }
 
     public static List<String> listWorlds() {
