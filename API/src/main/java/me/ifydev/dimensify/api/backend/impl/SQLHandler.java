@@ -183,6 +183,7 @@ public class SQLHandler extends AbstractDataHandler {
             DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
             return false;
         }
+        this.portals.removeIf(portal -> portal.getName().equalsIgnoreCase(name));
 
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM portals WHERE `name`=?");
