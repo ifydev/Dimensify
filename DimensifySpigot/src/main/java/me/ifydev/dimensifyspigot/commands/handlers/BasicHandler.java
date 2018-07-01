@@ -158,4 +158,31 @@ public class BasicHandler {
         boolean result = db.get().setDefaultDimension(world.get());
         return result ? DimensifyConstants.DEFAULT_WORLD_SET.replace("<WORLD>", world.get()) : DimensifyConstants.COULD_NOT_SET_DEFAULT_WORLD;
     }
+
+    public static String unloadDimension(String dimension, boolean save) {
+        boolean result = Bukkit.unloadWorld(dimension, save);
+        return result ? DimensifyConstants.DIMENSION_UNLOADED.replace("<NAME>", dimension) : DimensifyConstants.COULD_NOT_UNLOAD_DIMENSION;
+    }
+
+    public static String cacheStatus() {
+        DimensifyMain plugin = DimensifyMain.get();
+        Optional<AbstractDataHandler> db = plugin.getApi().getDatabaseHandler();
+        if (!db.isPresent()) return DimensifyConstants.DATABASE_HANDLER_NOT_PRESENT;
+
+        int dimensions = db.get().getDimensions(false).size();
+        int portals = db.get().getPortals(false).size();
+
+        return DimensifyConstants.CACHE_FORMAT
+                .replace("<DIMENSIONS>", String.valueOf(dimensions))
+                .replace("<PORTALS>", String.valueOf(portals));
+    }
+
+    public static String purgeCache() {
+        DimensifyMain plugin = DimensifyMain.get();
+        Optional<AbstractDataHandler> db = plugin.getApi().getDatabaseHandler();
+        if (!db.isPresent()) return DimensifyConstants.DATABASE_HANDLER_NOT_PRESENT;
+
+        db.get().reload();
+        return DimensifyConstants.CACHE_PURGED;
+    }
 }

@@ -17,7 +17,7 @@ public class PortalRegistry {
         DimensifyMain plugin = DimensifyMain.get();
         if (!plugin.getApi().getDatabaseHandler().isPresent()) return Optional.empty();
 
-        List<PortalMeta> portalCorners = plugin.getApi().getDatabaseHandler().get().getPortals();
+        List<PortalMeta> portalCorners = plugin.getApi().getDatabaseHandler().get().getPortals(false);
         for (PortalMeta regularMeta : portalCorners) {
             SpigotPortalMeta meta = new SpigotPortalMeta(regularMeta.getName(), regularMeta.getX1(), regularMeta.getX2(),
                     regularMeta.getY1(), regularMeta.getY2(), regularMeta.getZ1(), regularMeta.getZ2(),

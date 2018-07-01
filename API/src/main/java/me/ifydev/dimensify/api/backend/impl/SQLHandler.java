@@ -112,7 +112,7 @@ public class SQLHandler extends AbstractDataHandler {
     public void reload() {
         this.drop();
 
-        this.portals = this.getPortals();
+        this.portals = this.getPortals(true);
         this.dimensions = this.getDimensions(true);
     }
 
@@ -181,7 +181,9 @@ public class SQLHandler extends AbstractDataHandler {
     }
 
     @Override
-    public List<PortalMeta> getPortals() {
+    public List<PortalMeta> getPortals(boolean skipCache) {
+        if (!skipCache) return portals;
+
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) return Collections.emptyList();
 
@@ -212,7 +214,9 @@ public class SQLHandler extends AbstractDataHandler {
             return false;
         }
 
-        this.destinations.put(portal, destination);
+        Optional<PortalMeta> meta = this.getPortal(portal);
+        if (!meta.isPresent()) return false;
+        meta.get().setDestination(Optional.of(destination));
 
         try {
             PreparedStatement statement = connection.get().prepareStatement("UPDATE portals SET destination=? WHERE `name`=?");

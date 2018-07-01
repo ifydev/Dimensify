@@ -75,7 +75,7 @@ public class PortalHandler {
         Optional<AbstractDataHandler> db = plugin.getApi().getDatabaseHandler();
         if (!db.isPresent()) return Collections.singletonList(DimensifyConstants.DATABASE_HANDLER_NOT_PRESENT);
 
-        List<PortalMeta> portals = db.get().getPortals();
+        List<PortalMeta> portals = db.get().getPortals(false);
         return portals.stream().map(portal -> DimensifyConstants.PORTAL_LIST_FORMAT
                 .replace("<NAME>", portal.getName())
                 .replace("<X>", String.valueOf(portal.getX1()))

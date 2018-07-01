@@ -36,6 +36,8 @@ public class PlayerPortal implements Listener {
                 return;
             }
             WorldController.enterDimension(player, dimension.get());
+            // Make sure the player won't get damaged for no reason
+            player.setFallDistance(0);
         });
     }
 }

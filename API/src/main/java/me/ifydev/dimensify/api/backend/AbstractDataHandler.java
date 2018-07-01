@@ -16,7 +16,6 @@ public abstract class AbstractDataHandler {
 
     protected List<Dimension> dimensions = new ArrayList<>();
     protected List<PortalMeta> portals = new ArrayList<>();
-    protected Map<String, String> destinations = new HashMap<>();
     @Getter protected final ConnectionInformation connectionInformation;
 
     /**
@@ -43,7 +42,7 @@ public abstract class AbstractDataHandler {
 
     public abstract boolean createPortal(PortalMeta meta);
     public abstract boolean removePortal(String name);
-    public abstract List<PortalMeta> getPortals();
+    public abstract List<PortalMeta> getPortals(boolean skipCache);
 
     public abstract boolean setPortalDestination(String portal, String destination);
 

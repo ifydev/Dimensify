@@ -26,8 +26,11 @@ public class WorldController {
     }
 
     public Optional<World> getWorld(String name, boolean andMake) {
+        DimensifyMain plugin = DimensifyMain.get();
+
         World world = Bukkit.getWorld(name);
-        if (world == null && andMake) {
+
+        if (world == null && (plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(name).isPresent()).orElse(false)) || andMake) {
             this.loadWorld(new DimensifyWorld(name, DimensifyMain.get()));
             world = Bukkit.getWorld(name);
         }
@@ -56,14 +59,19 @@ public class WorldController {
         World world = Bukkit.getWorld(dimensionName);
         if (world == null) return false;
         // Teleport all the players from the deleted world, to the main world.
-        // TODO: We probably want to change this to whatever the default world is.
-        world.getPlayers().forEach(player -> player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation()));
+        DimensifyMain plugin = DimensifyMain.get();
+        Optional<World> defaultDimension = plugin.getWorldController().getWorld(plugin.getApi().getDatabaseHandler()
+                .map(db -> db.getDefaultDimension(false)).orElse(Bukkit.getWorlds().get(0).getName()));
+        if (!defaultDimension.isPresent()) {
+            plugin.getLogger().severe("Could not find a suitable dimension to send players to?!");
+            return false;
+        }
+        world.getPlayers().forEach(player -> player.teleport(defaultDimension.get().getSpawnLocation()));
 
         File folder = world.getWorldFolder();
         Bukkit.unloadWorld(world, false);
 
         // Remove from database
-        DimensifyMain plugin = DimensifyMain.get();
         plugin.getApi().getDatabaseHandler().ifPresent(db ->
                 db.removeDimension(dimensionName));
 

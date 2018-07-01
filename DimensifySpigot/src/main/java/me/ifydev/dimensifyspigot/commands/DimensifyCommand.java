@@ -220,6 +220,36 @@ public class DimensifyCommand implements CommandExecutor {
                 response = ColorUtil.makeReadable(response);
                 sender.sendMessage(response);
                 return;
+            } else if (args[0].equalsIgnoreCase("cache")) {
+                if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_CACHE)) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
+                    return;
+                }
+
+                boolean purge = args.length >= 2 && args[1].equalsIgnoreCase("purge");
+
+                String result = purge ? BasicHandler.purgeCache() : BasicHandler.cacheStatus();
+                result = ColorUtil.makeReadable(result);
+
+                sender.sendMessage(result);
+                return;
+            } else if (args[0].equalsIgnoreCase("unload")) {
+                if (!sender.hasPermission(DimensifyConstants.DIMENSIFY_UNLOAD)) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.YOU_DONT_HAVE_PERMISSION));
+                    return;
+                }
+
+                if (args.length < 2) {
+                    sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.NOT_ENOUGH_ARGUMENTS_UNLOAD_DIMENSION));
+                    return;
+                }
+                String dimension = args[1];
+                boolean save = !(args.length >= 3 && args[2].equalsIgnoreCase("false"));
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    String result = ColorUtil.makeReadable(BasicHandler.unloadDimension(dimension, save));
+                    sender.sendMessage(result);
+                });
+                return;
             }
             // Send help
             sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.DIMENSIFY_HELP_HEADER));

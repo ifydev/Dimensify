@@ -44,10 +44,11 @@ public class DimensifyConstants {
     public static final String NOT_ENOUGH_ARGUMENTS_SEND_PLAYER = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify send <player> <dimension>";
     public static final String NOT_ENOUGH_ARGUMENTS_GO = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify go <dimension>";
     public static final String NOT_ENOUGH_ARGUMENTS_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify delete <dimension>";
-    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify <create|delete|link> [args...]";
-    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_LINK = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify link <source_portal> <destination_dimension>";
+    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal <create|delete|link> [args...]";
+    public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_LINK = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal link <source_portal> <destination_dimension>";
     public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_CREATE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal create <name>";
     public static final String NOT_ENOUGH_ARGUMENTS_PORTAL_DELETE = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify portal delete <name>";
+    public static final String NOT_ENOUGH_ARGUMENTS_UNLOAD_DIMENSION = NOT_ENOUGH_ARGUMENTS_BASE + "/dimensify unload <world> [save_map?]";
 
     // General errors
     public static final String DATABASE_HANDLER_NOT_PRESENT = DIMENSIFY_PREFIX + "&c&lUnable to continue: Database handler not present?!";
@@ -68,6 +69,8 @@ public class DimensifyConstants {
     public static final String COULD_NOT_CONNECT_TO_DATABASE = DIMENSIFY_PREFIX + "&c&lCannot connect to the database!";
     public static final String CANNOT_ENTER_THIS_DIMENSION = DIMENSIFY_PREFIX + "&c&lYou don't have permission to enter this domain!";
     public static final String THIS_DIMENSION_DOES_NOT_EXIST_ANYMORE = DIMENSIFY_PREFIX + "&c&lThis dimension does not exist anymore!";
+    public static final String COULD_NOT_SET_DEFAULT_WORLD = DIMENSIFY_PREFIX + "&2&lCould not set default world.";
+    public static final String COULD_NOT_UNLOAD_DIMENSION = DIMENSIFY_PREFIX + "&2&lCould not unload dimension!";
 
     // General success
     public static final String CREATING_WORLD = DIMENSIFY_PREFIX + "World '<WORLD>' is being created...";
@@ -78,12 +81,14 @@ public class DimensifyConstants {
     public static final String PORTALS_LINKED = DIMENSIFY_PREFIX + "Portals have been linked!";
     public static final String PORTAL_CREATED = DIMENSIFY_PREFIX + "Portal '<PORTAL>' created!";
     public static final String PORTAL_DELETED = DIMENSIFY_PREFIX + "Portal '<PORTAL>' has been deleted!";
-    public static final String PORTAL_LIST_FORMAT = "&2&l<NAME> - &9&lX: <X>, Y: <Y>, Z: <Z> - &e&lDimension: <DIMENSION> - &3&lDestination: <DESTINATION>";
-    public static final String DIMENSION_LIST_FORMAT = "&2&l<NAME> - Type: <TYPE> - Default?: <DEFAULT>";
+    public static final String PORTAL_LIST_FORMAT = "&3&l<NAME> &8- &E&lX: <X>, Y: <Y>, Z: <Z> &8- &2&lDimension: <DIMENSION> &8- &5&lDestination: <DESTINATION>";
+    public static final String DIMENSION_LIST_FORMAT = "&3&l<NAME> &8- &5&lType: <TYPE> &8- &2&lDefault?: <DEFAULT>";
     public static final String THERE_ARE_NONE = DIMENSIFY_PREFIX + "&2&lThere are no <ITEM>!";
     public static final String DEFAULT_WORLD_FORMAT = DIMENSIFY_PREFIX + "&2&lDefault world: <WORLD>";
     public static final String DEFAULT_WORLD_SET = DIMENSIFY_PREFIX + "&2&lDefault world set to: <WORLD>!";
-    public static final String COULD_NOT_SET_DEFAULT_WORLD = DIMENSIFY_PREFIX + "&2&lCould not set default world.";
+    public static final String DIMENSION_UNLOADED = DIMENSIFY_PREFIX + "&2&lDimension '<NAME>' unloaded!";
+    public static final String CACHE_FORMAT = DIMENSIFY_PREFIX + "&2&lCache Status: &e&lDimensions: <DIMENSIONS> &8&l- &e&lPortals <PORTALS>";
+    public static final String CACHE_PURGED = DIMENSIFY_PREFIX + "&2&lCache has been purged!";
 
     // Permissions
     public static final String DIMENSIFY_ADMIN = "dimensify.admin";
@@ -99,6 +104,8 @@ public class DimensifyConstants {
     public static final String DIMENSIFY_GO = "dimensify.go";
     public static final String DIMENSIFY_SEND = "dimensify.send";
     public static final String DIMENSIFY_PORTAL = "dimensify.command.portal";
+    public static final String DIMENSIFY_UNLOAD = "dimensify.dimension.unload";
+    public static final String DIMENSIFY_CACHE = "dimensify.cache";
 
     // Help response
     // TODO: This should automatically paginate.
@@ -106,14 +113,20 @@ public class DimensifyConstants {
     public static final String DIMENSIFY_HELP_FOOTER = "&e=====================================================";
     public static final List<List<String>> HELP_RESPONSE = Arrays.asList(
             Arrays.asList(
-                    "&a&l/dimensify create <dimension_type> <world_name>",
-                    "&a&l/dimensify send <player> <world_name>",
-                    "&a&l/dimensify go <world_name>",
-                    "&a&l/dimensify delete <world_name>",
-                    "&a&l/dimensify default [world_name]",
+                "&a&l/dimensify create <dimension_type> <world_name> [args...]",
+                "&a&l/dimensify send <player> <dimension>",
+                "&a&l/dimensify go <dimension>",
+                "&a&l/dimensify delete <dimension>",
+                "&a&l/dimensify portal link <source_portal> <destination_dimension>",
+                "&a&l/dimensify portal <create|delete> <name>",
+                "&a&l/dimensify portal list",
+                "&a&l/dimensify list"
+            ),
+            Arrays.asList(
+                    "&a&l/dimensify unload <world> [save_map?]",
+                    "&a&l/dimensify cache [purge]",
                     "&a&l/dimensify list",
-                    "&a&l/dimensify link <source_portal> <destination_dimension>",
-                    "&a&l/dimensify portal <list|link|create|remove> [args...]"
+                    "&a&l/dimensify default [world]"
             )
     );
 

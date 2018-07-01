@@ -18,4 +18,14 @@ public class Dimension {
     private String type;
     private Optional<String> meta;
     @Setter private boolean isDefault;
+
+    @Override
+    public String toString() {
+        return "Dimension [" +
+                "name=" + name +
+                ", type=" + type +
+                ", meta=" + meta +
+                ", isDefault=" + isDefault +
+                "]";
+    }
 }
