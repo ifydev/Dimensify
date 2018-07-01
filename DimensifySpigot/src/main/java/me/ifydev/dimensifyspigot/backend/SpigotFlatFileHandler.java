@@ -7,6 +7,7 @@ import me.ifydev.dimensify.api.portal.PortalMeta;
 import me.ifydev.dimensify.api.portal.PortalType;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import me.ifydev.dimensifyspigot.portal.SpigotPortalMeta;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -26,8 +27,6 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
 
     private File storageFile;
     private FileConfiguration storage;
-
-    private String defaultWorld;
 
     public SpigotFlatFileHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
@@ -61,10 +60,6 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
             plugin.getLogger().severe("Could not create storage.yml");
             e.printStackTrace();
         }
-
-        this.defaultWorld = defaultWorld;
-        String defaultDimension = this.getDefaultDimension(true);
-        if (!defaultDimension.equals("")) this.defaultWorld = defaultDimension;
     }
 
     @Override
@@ -239,7 +234,8 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
 
     @Override
     public Optional<Dimension> getDimension(String name) {
-        if (name.equalsIgnoreCase(defaultWorld)) return Optional.of(new Dimension(defaultWorld, "", Optional.empty(), false));
+        String defaultDimension = getDefaultDimension(false);
+        if (name.equalsIgnoreCase(defaultDimension)) return Optional.of(new Dimension(defaultDimension, "", Optional.empty(), false));
         return this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
     }
 
@@ -254,17 +250,19 @@ public class SpigotFlatFileHandler extends AbstractDataHandler {
 
         dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst().ifPresent(dim -> {
             dim.setDefault(true);
-            this.defaultWorld = dim.getName();
 
             storage.set("dimensions." + dim.getName() + ".default", true);
+            saveStorage();
         });
         return true;
     }
 
     @Override
     public String getDefaultDimension(boolean skipCache) {
-        if (skipCache)
-            for (Dimension dimension : this.getDimensions(false)) if (dimension.isDefault()) return dimension.getName();
-        return defaultWorld;
+        // TODO: We don't support skipping the cache in this case right now.
+        // It shouldn't be needed anyways, but /shrug
+
+        for (Dimension dimension : this.getDimensions(false)) if (dimension.isDefault()) return dimension.getName();
+        return Bukkit.getWorlds().get(0).getName();
     }
 }

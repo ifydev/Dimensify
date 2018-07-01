@@ -107,9 +107,8 @@ public class BasicHandler {
             return DimensifyConstants.CANNOT_DELETE_MAIN_WORLD;
         DimensifyMain plugin = DimensifyMain.get();
 
-        if (!plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(dimension).isPresent()).orElse(false))
-            plugin.getWorldController().loadWorld(new DimensifyWorld(dimension, plugin));
-        else return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
+        if (!plugin.getWorldController().getWorld(dimension, false).isPresent())
+            return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
 
         // World exists, delete it
         boolean deleted = plugin.getWorldController().deleteWorld(dimension);

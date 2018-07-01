@@ -50,7 +50,7 @@ public class PortalHandler {
         if (!db.get().getPortal(portal).isPresent())
             return DimensifyConstants.PORTAL_DOES_NOT_EXIST.replace("<PORTAL>", portal);
         return db.get().removePortal(portal)
-                ? DimensifyConstants.PORTAL_DELETED : DimensifyConstants.COULD_NOT_CONNECT_TO_DATABASE;
+                ? DimensifyConstants.PORTAL_DELETED.replace("<PORTAL>", portal) : DimensifyConstants.COULD_NOT_CONNECT_TO_DATABASE;
     }
 
     public static String linkPortal(String portal, String destination) {

@@ -126,7 +126,6 @@ public class DimensifyConstants {
             Arrays.asList(
                     "&a&l/dimensify unload <world> [save_map?]",
                     "&a&l/dimensify cache [purge]",
-                    "&a&l/dimensify list",
                     "&a&l/dimensify default [world]"
             )
     );
