@@ -33,6 +33,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -46,15 +47,16 @@ import java.util.Optional;
 public class WorldController {
 
     public Optional<World> getWorld(String name) {
-        return getWorld(name, false);
+        return getWorld(null, name, false);
     }
 
-    public Optional<World> getWorld(String name, boolean andMake) {
+    public Optional<World> getWorld(CommandSender sender, String name, boolean andMake) {
         DimensifyMain plugin = DimensifyMain.get();
 
         World world = Bukkit.getWorld(name);
 
-        if (world == null && (plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(name).isPresent()).orElse(false)) || andMake) {
+        if (world == null && (plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(name).isPresent()).orElse(false) || andMake)) {
+            if (sender != null) sender.sendMessage(ColorUtil.makeReadable(DimensifyConstants.LOADING_WORLD));
             this.loadWorld(new DimensifyWorld(name, DimensifyMain.get()));
             world = Bukkit.getWorld(name);
         }
@@ -79,25 +81,21 @@ public class WorldController {
                 db.createDimension(new Dimension(creator.name(), creator.type().getName(), creator.getMeta(), creator.isDefault())));
     }
 
-    public boolean deleteWorld(String dimensionName) {
-        World world = Bukkit.getWorld(dimensionName);
-        if (world == null) return false;
-        // Teleport all the players from the deleted world, to the main world.
+    public boolean deleteWorld(CommandSender sender, String dimensionName) {
         DimensifyMain plugin = DimensifyMain.get();
-        Optional<World> defaultDimension = plugin.getWorldController().getWorld(plugin.getApi().getDatabaseHandler()
-                .map(db -> db.getDefaultDimension(false)).orElse(Bukkit.getWorlds().get(0).getName()));
-        if (!defaultDimension.isPresent()) {
-            plugin.getLogger().severe("Could not find a suitable dimension to send players to?!");
-            return false;
-        }
-        world.getPlayers().forEach(player -> player.teleport(defaultDimension.get().getSpawnLocation()));
+        boolean worldExists = plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(dimensionName).isPresent()).orElse(false);
+        if (!worldExists) return false;
 
-        File folder = world.getWorldFolder();
-        Bukkit.unloadWorld(world, false);
-
-        // Remove from database
+        Optional<World> world = plugin.getWorldController().getWorld(sender, dimensionName, false);
+        if (!world.isPresent()) return false;
+        // Teleport all the players from the deleted world, to the main world.
         plugin.getApi().getDatabaseHandler().ifPresent(db ->
                 db.removeDimension(dimensionName));
+
+        world.get().getPlayers().forEach(player -> player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation()));
+
+        File folder = world.get().getWorldFolder();
+        Bukkit.unloadWorld(world.get(), false);
 
         try {
             FileUtils.deleteDirectory(folder);

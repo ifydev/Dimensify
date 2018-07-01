@@ -124,7 +124,7 @@ public class DimensifyCommand implements CommandExecutor {
                 }
                 String worldName = args[1];
                 Bukkit.getScheduler().runTask(plugin, () -> {
-                    String result = ColorUtil.makeReadable(BasicHandler.deleteDimension(worldName));
+                    String result = ColorUtil.makeReadable(BasicHandler.deleteDimension(sender, worldName));
                     sender.sendMessage(result);
                 });
             } else if (args[0].equalsIgnoreCase("send")) {
@@ -138,7 +138,7 @@ public class DimensifyCommand implements CommandExecutor {
                     return;
                 }
                 Bukkit.getScheduler().runTask(plugin, () -> {
-                    String result = ColorUtil.makeReadable(BasicHandler.sendPlayerToDimension(args[1], args[2]));
+                    String result = ColorUtil.makeReadable(BasicHandler.sendPlayerToDimension(sender, args[1], args[2]));
                     sender.sendMessage(result);
                 });
             } else if (args[0].equalsIgnoreCase("portal")) {

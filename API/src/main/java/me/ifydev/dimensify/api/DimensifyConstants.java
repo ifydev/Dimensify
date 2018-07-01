@@ -90,6 +90,7 @@ public class DimensifyConstants {
     public static final String DIMENSION_UNLOADED = DIMENSIFY_PREFIX + "&2&lDimension '<NAME>' unloaded!";
     public static final String CACHE_FORMAT = DIMENSIFY_PREFIX + "&2&lCache Status: &e&lDimensions: <DIMENSIONS> &8&l- &e&lPortals <PORTALS>";
     public static final String CACHE_PURGED = DIMENSIFY_PREFIX + "&2&lCache has been purged!";
+    public static final String LOADING_WORLD = DIMENSIFY_PREFIX + "&2&lLoading world...";
 
     // Permissions
     public static final String DIMENSIFY_ADMIN = "dimensify.admin";

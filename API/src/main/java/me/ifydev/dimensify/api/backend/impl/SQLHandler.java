@@ -44,8 +44,6 @@ public class SQLHandler extends AbstractDataHandler {
     private boolean isUsingSQLite = false;
     private String baseConnectionUrl;
 
-    private String defaultWorld;
-
     public SQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
 
@@ -113,10 +111,6 @@ public class SQLHandler extends AbstractDataHandler {
             System.out.println("Encountered an error while trying to setup the database:");
             e.printStackTrace();
         }
-
-        this.defaultWorld = defaultWorld;
-        String defaultDimension = this.getDefaultDimension(true);
-        if (!defaultDimension.equals("")) this.defaultWorld = defaultDimension;
     }
 
     @Override
@@ -224,6 +218,9 @@ public class SQLHandler extends AbstractDataHandler {
                         results.getString("world"), Optional.ofNullable(results.getString("destination")),
                         PortalType.findType(results.getString("type"))
                 ));
+            results.close();
+            statement.close();
+            connection.get().close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -273,6 +270,9 @@ public class SQLHandler extends AbstractDataHandler {
                 dimensions.add(new Dimension(
                         results.getString("name"), results.getString("type"),
                         Optional.ofNullable(results.getString("meta")), results.getBoolean("default")));
+            results.close();
+            statement.close();
+            connection.get().close();
         } catch (SQLException e) {
             e.printStackTrace();
             return Collections.emptyList();
@@ -282,7 +282,8 @@ public class SQLHandler extends AbstractDataHandler {
 
     @Override
     public Optional<Dimension> getDimension(String name) {
-        if (name.equalsIgnoreCase(defaultWorld)) return Optional.of(new Dimension(defaultWorld, "", Optional.empty(), false));
+        String defaultDimension = getDefaultDimension(false);
+        if (name.equalsIgnoreCase(defaultDimension)) return Optional.of(new Dimension(defaultDimension, "", Optional.empty(), false));
         return this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
     }
 
@@ -299,7 +300,6 @@ public class SQLHandler extends AbstractDataHandler {
         if (!dimension.isPresent()) return false;
 
         dimension.get().setDefault(true);
-        this.defaultWorld = dimension.get().getName();
 
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) {
@@ -324,9 +324,23 @@ public class SQLHandler extends AbstractDataHandler {
 
     @Override
     public String getDefaultDimension(boolean skipCache) {
-        if (skipCache)
+        if (!skipCache)
             for (Dimension dimension : this.getDimensions(false)) if (dimension.isDefault()) return dimension.getName();
-        return defaultWorld;
+        Optional<Connection> connection = getConnection();
+        if (!connection.isPresent()) return "";
+
+        try {
+            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM dimensions WHERE `default`=1");
+            ResultSet results = statement.executeQuery();
+
+            if (results.first()) return results.getString("name");
+            results.close();
+            statement.close();
+            connection.get().close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     @Override
@@ -374,6 +388,7 @@ public class SQLHandler extends AbstractDataHandler {
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM dimensions WHERE `name`=?");
             statement.setString(1, name);
+            statement.execute();
 
             statement.close();
             connection.get().close();

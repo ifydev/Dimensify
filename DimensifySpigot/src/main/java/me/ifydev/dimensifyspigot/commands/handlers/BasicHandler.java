@@ -118,33 +118,33 @@ public class BasicHandler {
     public static String goToDimension(Player player, String dimension) {
         DimensifyMain plugin = DimensifyMain.get();
         // Make sure this dimension actually exists
-        Optional<World> world = plugin.getWorldController().getWorld(dimension);
+        Optional<World> world = plugin.getWorldController().getWorld(player, dimension, false);
         if (!world.isPresent())
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
         WorldController.enterDimension(player, world.get());
         return "";
     }
 
-    public static String deleteDimension(String dimension) {
+    public static String deleteDimension(CommandSender sender, String dimension) {
         // Make sure we're not deleting the main world.
         if (Bukkit.getWorlds().get(0).getName().equals(dimension))
             return DimensifyConstants.CANNOT_DELETE_MAIN_WORLD;
         DimensifyMain plugin = DimensifyMain.get();
 
-        if (!plugin.getWorldController().getWorld(dimension, false).isPresent())
+        if (!plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(dimension).isPresent()).orElse(false))
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
 
         // World exists, delete it
-        boolean deleted = plugin.getWorldController().deleteWorld(dimension);
+        boolean deleted = plugin.getWorldController().deleteWorld(sender, dimension);
         String response = deleted ? DimensifyConstants.WORLD_DELETED : DimensifyConstants.INVALID_WORLD;
         return response.replace("<WORLD>", dimension);
     }
 
-    public static String sendPlayerToDimension(String playerName, String dimension) {
+    public static String sendPlayerToDimension(CommandSender sender, String playerName, String dimension) {
         DimensifyMain plugin = DimensifyMain.get();
 
         // Make sure the player and world exist
-        Optional<World> world = plugin.getWorldController().getWorld(dimension);
+        Optional<World> world = plugin.getWorldController().getWorld(sender, dimension, false);
         if (!world.isPresent())
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
         Player player = Bukkit.getPlayerExact(playerName);
