@@ -28,16 +28,15 @@ import me.ifydev.dimensify.api.DimensifyConstants;
 import me.ifydev.dimensify.api.dimensions.Dimension;
 import me.ifydev.dimensifyspigot.DimensifyMain;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
+import me.ifydev.dimensifyspigot.util.MiscUtil;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -97,13 +96,7 @@ public class WorldController {
         File folder = world.get().getWorldFolder();
         Bukkit.unloadWorld(world.get(), false);
 
-        try {
-            FileUtils.deleteDirectory(folder);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
+        return MiscUtil.deleteFolderAndContents(folder);
     }
 
     public static void enterDimension(Player player, World dimension) {

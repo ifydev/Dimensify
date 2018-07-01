@@ -24,6 +24,7 @@
  */
 package me.ifydev.dimensifyspigot.util;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -36,5 +37,19 @@ public class MiscUtil {
         boolean first = true;
         StringBuilder finished = new StringBuilder();
         return finished.toString();
+    }
+
+    public static boolean deleteFolderAndContents(File file) {
+        if (file.isFile()) return file.delete();
+
+        if (!file.isDirectory()) return false;
+        File[] files = file.listFiles();
+        if (files == null) return false;
+
+        for (File f : files) {
+            if (f.isDirectory()) deleteFolderAndContents(f);
+            f.delete();
+        }
+        return file.delete();
     }
 }

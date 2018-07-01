@@ -31,12 +31,6 @@
             <artifactId>spigot-api</artifactId>
             <version>1.12.2-R0.1-SNAPSHOT</version>
         </dependency>
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.5</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -57,7 +51,6 @@
                             <artifactSet>
                                 <includes>
                                     <include>me.ifydev.dimensify:DimensifyAPI</include>
-                                    <include>commons-io:commons-io</include> <!-- TODO: NO THIS IS STUPID -->
                                 </includes>
                             </artifactSet>
                         </configuration>
