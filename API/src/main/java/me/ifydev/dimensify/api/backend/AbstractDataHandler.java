@@ -49,7 +49,7 @@ public abstract class AbstractDataHandler {
 
     public abstract boolean createDimension(Dimension dimension);
     public abstract boolean removeDimension(String name);
-    public abstract List<Dimension> getDimensions();
+    public abstract List<Dimension> getDimensions(boolean skipCache);
 
     public abstract Optional<Dimension> getDimension(String name);
     public abstract Optional<PortalMeta> getPortal(String name);

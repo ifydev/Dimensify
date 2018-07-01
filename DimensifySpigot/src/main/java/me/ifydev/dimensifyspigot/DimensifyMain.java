@@ -32,6 +32,7 @@ import me.ifydev.dimensifyspigot.commands.DimensifyCommand;
 import me.ifydev.dimensifyspigot.events.PlayerJoin;
 import me.ifydev.dimensifyspigot.events.PlayerPortal;
 import me.ifydev.dimensifyspigot.portal.PortalRegistry;
+import me.ifydev.dimensifyspigot.util.DisplayUtil;
 import me.ifydev.dimensifyspigot.util.Verifier;
 import me.ifydev.dimensifyspigot.world.DimensifyWorld;
 import me.ifydev.dimensifyspigot.world.WorldController;
@@ -74,7 +75,7 @@ public class DimensifyMain extends JavaPlugin {
         getLogger().info("Initializing Dimensify API...");
         api = new DimensifyAPI();
         try {
-            api.initialize(Bukkit.getWorlds().get(0).getName(), SpigotFlatFileHandler.class, backendType.get(), Verifier.verifyConnectionInformation(backendType.get()));
+            api.initialize(Bukkit.getWorlds().get(0).getName(), new DisplayUtil(), SpigotFlatFileHandler.class, backendType.get(), Verifier.verifyConnectionInformation(backendType.get()));
         } catch (Exception e) {
             getLogger().severe("Could not initialize Dimensify API!");
             e.printStackTrace();

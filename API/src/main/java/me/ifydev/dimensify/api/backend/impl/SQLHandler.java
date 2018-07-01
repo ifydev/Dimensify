@@ -1,6 +1,8 @@
 package me.ifydev.dimensify.api.backend.impl;
 
+import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensify.api.backend.AbstractDataHandler;
+import me.ifydev.dimensify.api.backend.ConnectionError;
 import me.ifydev.dimensify.api.backend.ConnectionInformation;
 import me.ifydev.dimensify.api.dimensions.Dimension;
 import me.ifydev.dimensify.api.portal.PortalMeta;
@@ -44,8 +46,7 @@ public class SQLHandler extends AbstractDataHandler {
             String connectionURL = baseConnectionUrl + "/" + connectionInformation.getDatabase();
             return Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.getUsername(), connectionInformation.getPassword()));
         } catch (SQLException e) {
-            // TODO
-            // PermissifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
+            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
         }
         return Optional.empty();
     }
@@ -55,30 +56,35 @@ public class SQLHandler extends AbstractDataHandler {
         this.dimensions = new ArrayList<>();
 
         try {
-            Optional<Connection> connection = getConnection();
-            if (!connection.isPresent()) return;
+            Connection connection;
+            if (isUsingSQLite) connection = DriverManager.getConnection(baseConnectionUrl);
+            else connection = DriverManager.getConnection(baseConnectionUrl, connectionInformation.getUsername(), connectionInformation.getPassword());
+            if (connection == null) {
+                DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+                return;
+            }
 
             String database = connectionInformation.getDatabase();
 
             if (!isUsingSQLite) {
-                PreparedStatement statement = connection.get().prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
+                PreparedStatement statement = connection.prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
                 statement.execute();
                 statement.close();
                 database += ".";
             } else database = "";
 
-            PreparedStatement dimensionsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
+            PreparedStatement dimensionsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
                     "dimensions (`name` VARCHAR(50) NOT NULL, `type` VARCHAR(20) NOT NULL, meta VARCHAR(767), `default` TINYINT NOT NULL)");
             dimensionsStatement.execute();
             dimensionsStatement.close();
 
-            PreparedStatement portalsStatement = connection.get().prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
+            PreparedStatement portalsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
                     "portals (`world` VARCHAR(50) NOT NULL, x1 INTEGER NOT NULL, x2 INTEGER NOT NULL, y1 INTEGER NOT NULL, y2 INTEGER NOT NULL" +
                     ", z1 INTEGER NOT NULL, z2 INTEGER NOT NULL, destination VARCHAR(60), `type` VARCHAR(60) NOT NULL, `name` VARCHAR(60) NOT NULL)");
             portalsStatement.execute();
             portalsStatement.close();
 
-            connection.get().close();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -106,7 +112,7 @@ public class SQLHandler extends AbstractDataHandler {
         this.drop();
 
         this.portals = this.getPortals();
-        this.dimensions = this.getDimensions();
+        this.dimensions = this.getDimensions(true);
     }
 
     @Override
@@ -118,7 +124,11 @@ public class SQLHandler extends AbstractDataHandler {
     @Override
     public boolean createPortal(PortalMeta meta) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return false;
+        if (!connection.isPresent()) {
+            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return false;
+        }
+        this.portals.add(meta);
 
         try {
             PreparedStatement statement = connection.get().prepareStatement("INSERT INTO portals " +
@@ -150,7 +160,10 @@ public class SQLHandler extends AbstractDataHandler {
     @Override
     public boolean removePortal(String name) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return false;
+        if (!connection.isPresent()) {
+            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return false;
+        }
 
         try {
             PreparedStatement statement = connection.get().prepareStatement("DELETE FROM portals WHERE `name`=?");
@@ -193,7 +206,10 @@ public class SQLHandler extends AbstractDataHandler {
     @Override
     public boolean setPortalDestination(String portal, String destination) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return false;
+        if (!connection.isPresent()) {
+            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return false;
+        }
 
         this.destinations.put(portal, destination);
 
@@ -213,7 +229,9 @@ public class SQLHandler extends AbstractDataHandler {
     }
 
     @Override
-    public List<Dimension> getDimensions() {
+    public List<Dimension> getDimensions(boolean skipCache) {
+        if (!skipCache) return this.dimensions;
+
         Optional<Connection> connection = getConnection();
         if (!connection.isPresent()) return Collections.emptyList();
 
@@ -255,7 +273,10 @@ public class SQLHandler extends AbstractDataHandler {
         this.defaultWorld = dimension.get().getName();
 
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return false;
+        if (!connection.isPresent()) {
+            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return false;
+        }
         try {
             PreparedStatement removeCurrent = connection.get().prepareStatement("UPDATE dimensions SET `default`=0 WHERE `default`=1");
             removeCurrent.execute();
@@ -275,14 +296,17 @@ public class SQLHandler extends AbstractDataHandler {
     @Override
     public String getDefaultDimension(boolean skipCache) {
         if (skipCache)
-            for (Dimension dimension : this.getDimensions()) if (dimension.isDefault()) return dimension.getName();
+            for (Dimension dimension : this.getDimensions(false)) if (dimension.isDefault()) return dimension.getName();
         return defaultWorld;
     }
 
     @Override
     public boolean createDimension(Dimension dimension) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return false;
+        if (!connection.isPresent()) {
+            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return false;
+        }
 
         if (dimensions.stream().anyMatch(d -> d.getName().equalsIgnoreCase(dimension.getName()))) return false;
         this.dimensions.add(dimension);
@@ -309,7 +333,10 @@ public class SQLHandler extends AbstractDataHandler {
     @Override
     public boolean removeDimension(String name) {
         Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return false;
+        if (!connection.isPresent()) {
+            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
+            return false;
+        }
 
         Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
         if (!dimension.isPresent()) return false;

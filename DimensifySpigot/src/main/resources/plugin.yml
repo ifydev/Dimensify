@@ -6,5 +6,4 @@ author: IfyDev
 commands:
   dimensify:
     decsription: "Do things with dimensions"
-  test:
-    description: ""
+    permission: dimensify.command.base

@@ -19,22 +19,25 @@ public class PortalRegistry {
 
         List<PortalMeta> portalCorners = plugin.getApi().getDatabaseHandler().get().getPortals();
         for (PortalMeta regularMeta : portalCorners) {
-            SpigotPortalMeta meta = (SpigotPortalMeta) regularMeta;
+            System.out.println(regularMeta);
+            SpigotPortalMeta meta = new SpigotPortalMeta(regularMeta.getName(), regularMeta.getX1(), regularMeta.getX2(),
+                    regularMeta.getY1(), regularMeta.getY2(), regularMeta.getZ1(), regularMeta.getZ2(),
+                    regularMeta.getWorld(), regularMeta.getDestination(), regularMeta.getType());
 
             Optional<PortalCorners> cornersOptional = meta.getCorners();
             if (!cornersOptional.isPresent()) continue;
-            PortalCorners corner = cornersOptional.get();
+            PortalCorners corners = cornersOptional.get();
 
             Location bottom;
             Location top;
 
             // Find which location is the top / bottom
-            if (corner.getFirst().getY() < corner.getSecond().getY()) {
-                top = corner.getSecond();
-                bottom = corner.getFirst();
+            if (corners.getFirst().getY() < corners.getSecond().getY()) {
+                top = corners.getSecond();
+                bottom = corners.getFirst();
             } else {
-                top = corner.getFirst();
-                bottom = corner.getSecond();
+                top = corners.getFirst();
+                bottom = corners.getSecond();
             }
 
             int x1 = Math.min(top.getBlockX(), bottom.getBlockX());

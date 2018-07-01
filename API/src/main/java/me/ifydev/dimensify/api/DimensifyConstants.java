@@ -24,6 +24,7 @@
  */
 package me.ifydev.dimensify.api;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class DimensifyConstants {
     private static final String DIMENSIFY_PREFIX = "&a&lDimensify> ";
 
     public static final String YOU_ARENT_A_PLAYER = DIMENSIFY_PREFIX + "You must be a player for this command!";
+    public static final String YOU_DONT_HAVE_PERMISSION = DIMENSIFY_PREFIX + "&c&lYou don't have permission for this command!";
 
     // Not enough arguments responses
     private static final String NOT_ENOUGH_ARGUMENTS_BASE = DIMENSIFY_PREFIX + "&c&lNot enough arguments: ";
@@ -82,6 +84,21 @@ public class DimensifyConstants {
     public static final String DEFAULT_WORLD_SET = DIMENSIFY_PREFIX + "&2&lDefault world set to: <WORLD>!";
     public static final String COULD_NOT_SET_DEFAULT_WORLD = DIMENSIFY_PREFIX + "&2&lCould not set default world.";
 
+    // Permissions
+    public static final String DIMENSIFY_ADMIN = "dimensify.admin";
+    public static final String DIMENSIFY_BASE = "dimensify.command.base";
+    public static final String DIMENSIFY_ADD_PORTAL = "dimensify.portal.create";
+    public static final String DIMENSIFY_REMOVE_PORTAL = "dimensify.portal.delete";
+    public static final String DIMENSIFY_CREATE_DIMENSION = "dimensify.dimension.create";
+    public static final String DIMENSIFY_REMOVE_DIMENSION = "dimensify.dimension.delete";
+    public static final String DIMENSIFY_LIST_PORTALS = "dimensify.list.portals";
+    public static final String DIMENSIFY_LIST_DIMENSIONS = "dimensify.list.dimensions";
+    public static final String DIMENSIFY_LINK = "dimensify.portal.link";
+    public static final String DIMENSIFY_DEFAULT = "dimensify.default";
+    public static final String DIMENSIFY_GO = "dimensify.go";
+    public static final String DIMENSIFY_SEND = "dimensify.send";
+    public static final String DIMENSIFY_PORTAL = "dimensify.command.portal";
+
     // Help response
     // TODO: This should automatically paginate.
     public static final String DIMENSIFY_HELP_HEADER = "&e================== &a&lDimensify  Help &e==================";
@@ -98,4 +115,9 @@ public class DimensifyConstants {
                     "&a&l/dimensify portal <list|link|create|remove> [args...]"
             )
     );
+
+    public static final List<String> DIMENSIFY_ERROR = new ArrayList<>(Arrays.asList(
+            "&c&lError encountered: <ERROR_TYPE>",
+            "&c&lShould this be reported?: <SHOULD_REPORT>"
+    ));
 }

@@ -1,13 +1,7 @@
 package me.ifydev.dimensifyspigot.events;
 
-import me.ifydev.dimensify.api.DimensifyConstants;
 import me.ifydev.dimensifyspigot.DimensifyMain;
-import me.ifydev.dimensifyspigot.util.ColorUtil;
-import me.ifydev.dimensifyspigot.world.DimensifyWorld;
 import me.ifydev.dimensifyspigot.world.WorldController;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,20 +19,15 @@ public class PlayerPortal implements Listener {
         // We cancel this event if they're within one of our portals, so that we can send them ourselves.
         DimensifyMain plugin = DimensifyMain.get();
 
-        plugin.getPortalRegistry().findCornersFromPosition(e.getPlayer().getLocation()).ifPresent(meta -> {
-            Player player = e.getPlayer();
+        Player player = e.getPlayer();
+        plugin.getPortalRegistry().findCornersFromPosition(player.getLocation()).ifPresent(corners -> {
             e.setCancelled(true);
 
-            plugin.getPortalRegistry().findCornersFromPosition(player.getLocation()).ifPresent(corners -> {
-                if (!corners.getDestination().isPresent()) return;
+            if (!corners.getDestination().isPresent()) return;
 
-                String link = corners.getDestination().get();
-                if (!plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(link).isPresent()).orElse(true)) {
-                    // Load the world, since it's not here
-                    plugin.getWorldController().loadWorld(new DimensifyWorld(link, plugin));
-                }
-                WorldController.enterDimension(player, link);
-            });
+            String link = corners.getDestination().get();
+            World dimension = DimensifyMain.get().getWorldController().getWorld(link);
+            WorldController.enterDimension(player, dimension);
         });
     }
 }

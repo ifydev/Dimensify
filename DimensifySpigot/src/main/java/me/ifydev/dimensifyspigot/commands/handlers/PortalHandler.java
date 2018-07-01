@@ -10,6 +10,7 @@ import me.ifydev.dimensifyspigot.portal.SpigotPortalMeta;
 import me.ifydev.dimensifyspigot.portal.algo.PortalCornerDetection;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -61,7 +62,8 @@ public class PortalHandler {
         if (!db.get().getPortal(portal).isPresent())
             return DimensifyConstants.PORTAL_DOES_NOT_EXIST.replace("<PORTAL>", portal);
         // And make sure the world exists
-        if (!db.get().getDimension(portal).isPresent())
+        World world = plugin.getWorldController().getWorld(destination);
+        if (world == null)
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", destination);
 
         return db.get().setPortalDestination(portal, destination)
@@ -79,7 +81,7 @@ public class PortalHandler {
                 .replace("<X>", String.valueOf(portal.getX1()))
                 .replace("<Y>", String.valueOf(portal.getY1()))
                 .replace("<Z>", String.valueOf(portal.getZ1()))
-                .replace("<WORLD>", portal.getWorld())
+                .replace("<DIMENSION>", portal.getWorld())
                 .replace("<DESTINATION>", portal.getDestination()
                         .orElse(ChatColor.RED + "" + ChatColor.BOLD + "NONE"))).collect(Collectors.toList());
     }

@@ -71,7 +71,9 @@ public class WorldController {
         return true;
     }
 
-    public static void enterDimension(Player player, String dimension) {
+    public static void enterDimension(Player player, World dimension) {
+        if (dimension == null) return;
+
         DimensifyMain plugin = DimensifyMain.get();
 
         if (plugin.isPermissionRestrictDimensions()) {
@@ -82,8 +84,11 @@ public class WorldController {
             }
         }
 
-        World world = plugin.getWorldController().getWorld(dimension);
-        player.teleport(world.getSpawnLocation());
+        player.teleport(dimension.getSpawnLocation());
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ColorUtil.makeReadable(DimensifyConstants.WHOOSH)));
+    }
+
+    public static void enterDimension(Player player, String dimension) {
+        enterDimension(player, DimensifyMain.get().getWorldController().getWorld(dimension));
     }
 }

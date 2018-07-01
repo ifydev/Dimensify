@@ -4,7 +4,7 @@ storage: sqlite
 # All options except for `file` are only used for MySQL`.
 # When the storage is `sqlite`, the file name for the database will be the name you selected within
 # `file`, with `.db` appended to the end.
-# However, when `storage` is `flatfile`, then it will be `file` with `.yml` appended to the end.
+# When storage is `flatfile`, then the name `storage.yml` will always be used.
 connection:
   host: localhost
   port: 3306

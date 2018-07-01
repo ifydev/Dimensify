@@ -94,9 +94,10 @@ public class BasicHandler {
     public static String goToDimension(Player player, String dimension) {
         DimensifyMain plugin = DimensifyMain.get();
         // Make sure this dimension actually exists
-        if (!plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(dimension).isPresent()).orElse(false))
+        World world = plugin.getWorldController().getWorld(dimension);
+        if (world == null)
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
-        WorldController.enterDimension(player, dimension);
+        WorldController.enterDimension(player, world);
         return "";
     }
 
@@ -120,13 +121,13 @@ public class BasicHandler {
         DimensifyMain plugin = DimensifyMain.get();
 
         // Make sure the player and world exist
-        if (!plugin.getApi().getDatabaseHandler().map(db -> db.getDimension(dimension).isPresent()).orElse(false))
+        World world = plugin.getWorldController().getWorld(dimension);
+        if (world == null)
             return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", dimension);
         Player player = Bukkit.getPlayerExact(playerName);
         if (player == null) return DimensifyConstants.INVALID_PLAYER.replace("<PLAYER>", playerName);
 
         // Send the player to the dimension
-        World world = plugin.getWorldController().getWorld(dimension);
         player.teleport(world.getSpawnLocation());
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ColorUtil.makeReadable(DimensifyConstants.WHOOSH)));
         return DimensifyConstants.PLAYER_HAS_BEEN_SENT.replace("<PLAYER>", player.getName());
@@ -137,7 +138,7 @@ public class BasicHandler {
         Optional<AbstractDataHandler> db = plugin.getApi().getDatabaseHandler();
         if (!db.isPresent()) return Collections.singletonList(DimensifyConstants.DATABASE_HANDLER_NOT_PRESENT);
 
-        List<Dimension> portals = db.get().getDimensions();
+        List<Dimension> portals = db.get().getDimensions(false);
         return portals.stream().map(dim -> DimensifyConstants.DIMENSION_LIST_FORMAT
                 .replace("<NAME>", dim.getName())
                 .replace("<TYPE>", dim.getType())

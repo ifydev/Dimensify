@@ -28,6 +28,7 @@ import lombok.Getter;
 import me.ifydev.dimensify.api.backend.AbstractDataHandler;
 import me.ifydev.dimensify.api.backend.BackendType;
 import me.ifydev.dimensify.api.backend.ConnectionInformation;
+import me.ifydev.dimensify.api.util.DisplayUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
@@ -43,9 +44,11 @@ public class DimensifyAPI {
     private static Optional<DimensifyAPI> api;
 
     @Getter private Optional<AbstractDataHandler> databaseHandler;
+    @Getter private DisplayUtil displayUtil;
 
-    public void initialize(String defaultWorld, Class<? extends AbstractDataHandler> handler, BackendType backendType, Optional<ConnectionInformation> connectionInformation) throws Exception {
+    public void initialize(String defaultWorld, DisplayUtil displayUtil, Class<? extends AbstractDataHandler> handler, BackendType backendType, Optional<ConnectionInformation> connectionInformation) throws Exception {
         api = Optional.of(this);
+        this.displayUtil = displayUtil;
 
         try {
             // If we don't have a database handler, then we default to the flat-file handler.

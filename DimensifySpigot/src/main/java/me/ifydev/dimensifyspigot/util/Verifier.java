@@ -35,7 +35,7 @@ public class Verifier {
                         plugin.getConfig().getString("connection.password"),
                         new HashMap<>())
                 );
-            } else if (type.getDisplayName().equalsIgnoreCase("sqlite") || type.getDisplayName().equalsIgnoreCase("flatfile")) {
+            } else if (type.getDisplayName().equalsIgnoreCase("sqlite")) {
                 if (plugin.getConfig().getString("connection.file") == null) return Optional.empty();
 
                 Map<String, Object> sqliteMeta = new HashMap<>();
