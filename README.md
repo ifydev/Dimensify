@@ -20,9 +20,9 @@ Arguments:
     - `amplified`
     - `large_biomes`
     - `customized`
-    - `DEFAULT_1_1`
+    - `default_1_1`
 
-Dimension type is what kind of generation to use. Possible values are displayed above.
+Dimension type is what kind of generation to use. Possible values are displayed above, and come from Minecraft.
     
 Arguments:
   * `name`
