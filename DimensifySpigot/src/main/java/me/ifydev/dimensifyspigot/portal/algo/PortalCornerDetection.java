@@ -48,10 +48,10 @@ public class PortalCornerDetection {
 
         boolean facingNorthSouth = direction == DirectionUtil.CardinalDirection.NORTH || direction == DirectionUtil.CardinalDirection.SOUTH;
 
-        boolean portalDown = starting.getBlock().getRelative(BlockFace.DOWN).getType() == Material.PORTAL;
-        boolean portalUp = starting.getBlock().getRelative(BlockFace.UP).getType() == Material.PORTAL;
-        boolean portalLeft = starting.getBlock().getRelative(facingNorthSouth ? BlockFace.WEST : BlockFace.SOUTH).getType() == Material.PORTAL;
-        boolean portalRight = starting.getBlock().getRelative(facingNorthSouth ? BlockFace.EAST : BlockFace.NORTH).getType() == Material.PORTAL;
+        boolean portalDown = starting.getBlock().getRelative(BlockFace.DOWN).getType() == Material.NETHER_PORTAL;
+        boolean portalUp = starting.getBlock().getRelative(BlockFace.UP).getType() == Material.NETHER_PORTAL;
+        boolean portalLeft = starting.getBlock().getRelative(facingNorthSouth ? BlockFace.WEST : BlockFace.SOUTH).getType() == Material.NETHER_PORTAL;
+        boolean portalRight = starting.getBlock().getRelative(facingNorthSouth ? BlockFace.EAST : BlockFace.NORTH).getType() == Material.NETHER_PORTAL;
 
         boolean isBottom = true;
         boolean isLeft = true;
@@ -72,7 +72,7 @@ public class PortalCornerDetection {
             }
             Block next;
             next = current.getRelative(isBottom ? BlockFace.UP : BlockFace.DOWN);
-            if (next.getType() != Material.PORTAL) break;
+            if (next.getType() != Material.NETHER_PORTAL) break;
 
             if (next.getY() >= MAX_HEIGHT || next.getY() <= 0) {
                 current = null;
@@ -98,7 +98,7 @@ public class PortalCornerDetection {
             if (!isLeft) next = current.getRelative(facingNorthSouth ? BlockFace.WEST : BlockFace.SOUTH);
             else next = current.getRelative(facingNorthSouth ? BlockFace.EAST : BlockFace.NORTH);
 
-            if (next.getType() != Material.PORTAL) break;
+            if (next.getType() != Material.NETHER_PORTAL) break;
             current = next;
             distanceMoved++;
         } while (true);

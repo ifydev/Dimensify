@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 public class PortalHandler {
 
     public static String createPortal(Player player, Block lookingAt, String name) {
-        if (lookingAt == null || lookingAt.getType() != Material.PORTAL) return DimensifyConstants.MUST_LOOK_AT_PORTAL_BLOCKS;
+        if (lookingAt == null || lookingAt.getType() != Material.NETHER_PORTAL) return DimensifyConstants.MUST_LOOK_AT_PORTAL_BLOCKS;
 
         DimensifyMain plugin = DimensifyMain.get();
         Optional<AbstractDataHandler> db = plugin.getApi().getDatabaseHandler();

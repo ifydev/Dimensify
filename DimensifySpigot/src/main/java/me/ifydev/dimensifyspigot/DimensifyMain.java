@@ -88,7 +88,7 @@ public class DimensifyMain extends JavaPlugin {
 
         preloadWorlds = getConfig().getBoolean("preload_worlds", true);
         allowEntryByDefault = getConfig().getBoolean("default_dimension_restriction", true);
-        permissionRestrictDimensions= getConfig().getBoolean("permission_restrict_dimensions", false);
+        permissionRestrictDimensions = getConfig().getBoolean("permission_restrict_dimensions", false);
         sendPlayersToDefaultWorldOnLogin = getConfig().getBoolean("send_players_to_default_world_on_login", false);
 
         if (preloadWorlds)
@@ -124,12 +124,9 @@ public class DimensifyMain extends JavaPlugin {
             if (!file.exists()) {
                 getLogger().info("Config.yml not found, creating!");
                 saveDefaultConfig();
-            } else {
-                getLogger().info("Config.yml found, loading!");
-            }
+            } else getLogger().info("Config.yml found, loading!");
         } catch (Exception e) {
             e.printStackTrace();
-
         }
     }
 
