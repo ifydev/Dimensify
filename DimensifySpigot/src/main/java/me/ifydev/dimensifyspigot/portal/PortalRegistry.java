@@ -43,6 +43,7 @@ public class PortalRegistry {
 
         List<PortalMeta> portalCorners = plugin.getApi().getDatabaseHandler().get().getPortals(false);
         for (PortalMeta regularMeta : portalCorners) {
+            if (!regularMeta.getWorld().equals(location.getWorld().getName())) continue;
             SpigotPortalMeta meta = new SpigotPortalMeta(regularMeta.getName(), regularMeta.getX1(), regularMeta.getX2(),
                     regularMeta.getY1(), regularMeta.getY2(), regularMeta.getZ1(), regularMeta.getZ2(),
                     regularMeta.getWorld(), regularMeta.getDestination(), regularMeta.getType());

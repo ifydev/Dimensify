@@ -1,0 +1,39 @@
+repositories {
+    maven {
+        url = uri('https://hub.spigotmc.org/nexus/content/repositories/public/')
+        content {
+            includeGroup 'org.spigotmc'
+            includeGroup 'net.md-5'
+        }
+    }
+}
+
+def spigotApi = 'org.spigotmc:spigot-api:26.3-R0.1-SNAPSHOT'
+
+configurations {
+    mockitoAgent
+}
+
+dependencies {
+    implementation project(':API')
+    compileOnly spigotApi
+
+    testImplementation spigotApi
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'
+    testImplementation 'org.mockito:mockito-core:5.24.0'
+    mockitoAgent('org.mockito:mockito-core:5.24.0') {
+        transitive = false
+    }
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.3'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    jvmArgs "-javaagent:${configurations.mockitoAgent.singleFile}"
+}
+
+// Bundle the API classes, as the Maven Shade configuration did. The server
+// supplies Spigot and its dependencies; Lombok is used only during compilation.
+tasks.named('jar') {
+    from project(':API').sourceSets.main.output
+}

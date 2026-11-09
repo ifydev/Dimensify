@@ -25,6 +25,7 @@
 package me.ifydev.dimensifyspigot.util;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.List;
 
 /**
@@ -34,12 +35,11 @@ import java.util.List;
 public class MiscUtil {
 
     public static String joinStrings(char delim, List<String> joining) {
-        boolean first = true;
-        StringBuilder finished = new StringBuilder();
-        return finished.toString();
+        return String.join(String.valueOf(delim), joining);
     }
 
     public static boolean deleteFolderAndContents(File file) {
+        if (Files.isSymbolicLink(file.toPath())) return false;
         if (file.isFile()) return file.delete();
 
         if (!file.isDirectory()) return false;
@@ -47,8 +47,7 @@ public class MiscUtil {
         if (files == null) return false;
 
         for (File f : files) {
-            if (f.isDirectory()) deleteFolderAndContents(f);
-            f.delete();
+            if (!deleteFolderAndContents(f)) return false;
         }
         return file.delete();
     }
