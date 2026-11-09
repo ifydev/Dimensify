@@ -1,9 +1,22 @@
 name: Dimensify
-version: 1.0.0
+version: 1.1.0
 main: me.ifydev.dimensifyspigot.DimensifyMain
 author: IfyDev
+api-version: '26.3'
+libraries:
+  - org.xerial:sqlite-jdbc:3.54.1.0
+  - com.mysql:mysql-connector-j:26.10.0
 
 commands:
   dimensify:
-    decsription: "Do things with dimensions"
+    description: "Do things with dimensions"
     permission: dimensify.command.base
+    aliases: [dim]
+
+permissions:
+  dimensify.admin:
+    default: op
+    children:
+      dimensify.command.base: true
+  dimensify.command.base:
+    default: op

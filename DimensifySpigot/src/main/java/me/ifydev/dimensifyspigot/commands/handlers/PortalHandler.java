@@ -24,19 +24,19 @@
  */
 package me.ifydev.dimensifyspigot.commands.handlers;
 
-import me.ifydev.dimensify.api.DimensifyConstants;
 import me.ifydev.dimensify.api.backend.AbstractDataHandler;
+import me.ifydev.dimensify.api.DimensifyConstants;
 import me.ifydev.dimensify.api.portal.PortalMeta;
 import me.ifydev.dimensify.api.portal.PortalType;
 import me.ifydev.dimensifyspigot.DimensifyMain;
+import me.ifydev.dimensifyspigot.portal.algo.PortalCornerDetection;
 import me.ifydev.dimensifyspigot.portal.PortalCorners;
 import me.ifydev.dimensifyspigot.portal.SpigotPortalMeta;
-import me.ifydev.dimensifyspigot.portal.algo.PortalCornerDetection;
+import org.bukkit.block.Block;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 public class PortalHandler {
 
     public static String createPortal(Player player, Block lookingAt, String name) {
-        if (lookingAt == null || lookingAt.getType() != Material.PORTAL) return DimensifyConstants.MUST_LOOK_AT_PORTAL_BLOCKS;
+        if (lookingAt == null || lookingAt.getType() != Material.NETHER_PORTAL) return DimensifyConstants.MUST_LOOK_AT_PORTAL_BLOCKS;
 
         DimensifyMain plugin = DimensifyMain.get();
         Optional<AbstractDataHandler> db = plugin.getApi().getDatabaseHandler();
@@ -86,9 +86,7 @@ public class PortalHandler {
         if (!db.get().getPortal(portal).isPresent())
             return DimensifyConstants.PORTAL_DOES_NOT_EXIST.replace("<PORTAL>", portal);
         // And make sure the world exists
-        Optional<World> world = plugin.getWorldController().getWorld(destination);
-        if (!world.isPresent())
-            return DimensifyConstants.INVALID_WORLD.replace("<WORLD>", destination);
+        plugin.getWorldController().destination(destination);
 
         return db.get().setPortalDestination(portal, destination)
                 ? DimensifyConstants.PORTALS_LINKED : DimensifyConstants.COULD_NOT_CONNECT_TO_DATABASE;

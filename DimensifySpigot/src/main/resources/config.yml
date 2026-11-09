@@ -2,8 +2,7 @@
 # The following options are valid: `sqlite`, `flatfile`, and `mysql`.
 storage: sqlite
 # All options except for `file` are only used for MySQL`.
-# When the storage is `sqlite`, the file name for the database will be the name you selected within
-# `file`, with `.db` appended to the end.
+# When storage is `sqlite`, `file` is the database file name.
 # When storage is `flatfile`, then the name `storage.yml` will always be used.
 connection:
   host: localhost
@@ -18,7 +17,7 @@ send_players_to_default_world_on_login: false
 # Setting `permission_restrict_dimensions` to `true` will make all dimensions require permissions in
 # the following format: `dimension.<dimension_name>.allow` or `dimension.<dimension_name>.deny`.
 # If the permission is not present on the player, then we'll use the value from `default_dimension_restriction`.
-# Please note, permission restrictions do not take effect when a player is sent to the dimension.
+# Restrictions also apply when a player is sent to a dimension.
 permission_restrict_dimensions: false
 # `true` allows entry by default, `false` denies entry by default.
 default_dimension_restriction: true
@@ -32,3 +31,13 @@ preload_worlds: false
 #
 # For worlds to preload, the option `preload_worlds` must be set to true as well.
 world_preload:
+
+inventories:
+  enabled: false
+  separate:
+    - inventory
+    - ender-chest
+    - experience
+    - health
+    - hunger
+    - potion-effects

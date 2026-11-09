@@ -24,50 +24,79 @@
  */
 package me.ifydev.dimensifyspigot.events;
 
-import me.ifydev.dimensify.api.DimensifyConstants;
+import lombok.RequiredArgsConstructor;
 import me.ifydev.dimensifyspigot.DimensifyMain;
+import me.ifydev.dimensifyspigot.portal.PortalLinks;
+import me.ifydev.dimensifyspigot.portal.SpigotPortalMeta;
 import me.ifydev.dimensifyspigot.util.ColorUtil;
-import me.ifydev.dimensifyspigot.world.WorldController;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.util.Optional;
 
-/**
- * @author Innectic
- * @since 06/22/2018
- */
+@RequiredArgsConstructor
 public class PlayerPortal implements Listener {
 
-    @EventHandler
-    public void onPlayerAboutToTeleportEvent(PlayerPortalEvent e) {
-        // We cancel this event if they're within one of our portals, so that we can send them ourselves.
-        DimensifyMain plugin = DimensifyMain.get();
+    private final DimensifyMain plugin;
 
-        plugin.getPortalRegistry().findCornersFromPosition(e.getFrom()).ifPresent(corners -> {
-            e.setCancelled(true);
-
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                Player player = e.getPlayer();
-
-                if (!corners.getDestination().isPresent()) return;
-
-                String link = corners.getDestination().get();
-                Optional<World> dimension = DimensifyMain.get().getWorldController().getWorld(link);
-                if (!dimension.isPresent()) {
-                    player.sendMessage(ColorUtil.makeReadable(DimensifyConstants.THIS_DIMENSION_DOES_NOT_EXIST_ANYMORE));
-                    return;
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onPlayerAboutToTeleportEvent(PlayerPortalEvent event) {
+        if (event.getCause() != TeleportCause.NETHER_PORTAL && event.getCause() != TeleportCause.END_PORTAL) return;
+        boolean end = event.getCause() == TeleportCause.END_PORTAL;
+        PortalLinks links = new PortalLinks(plugin.getWorldController());
+        if (!links.enabled(event.getFrom().getWorld(), end)) {
+            event.setCancelled(true);
+            return;
+        }
+        Optional<SpigotPortalMeta> portal = plugin.getPortalRegistry().findCornersFromPosition(event.getFrom());
+        if (portal.isPresent() && portal.get().getDestination().isPresent()) {
+            event.setCancelled(true);
+            String destination = portal.get().getDestination().get();
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                try {
+                    if (event.getPlayer().isOnline()) plugin.getWorldController().teleport(event.getPlayer(), plugin.getWorldController().destination(destination));
+                } catch (RuntimeException e) {
+                    event.getPlayer().sendMessage(ColorUtil.makeReadable("&c" + e.getMessage()));
                 }
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    WorldController.enterDimension(player, dimension.get());
-                    // Make sure the player won't get damaged for no reason
-                    player.setFallDistance(0);
-                });
             });
-        });
+            return;
+        }
+        try {
+            Optional<Location> destination = links.destination(event.getFrom(), end);
+            if (destination.isPresent()) {
+                event.setTo(destination.get());
+                event.setCanCreatePortal(!end);
+            }
+        } catch (RuntimeException e) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ColorUtil.makeReadable("&c" + e.getMessage()));
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onEntityPortal(EntityPortalEvent event) {
+        boolean end = event.getFrom().getWorld().getEnvironment() == World.Environment.THE_END
+                || event.getTo() != null && event.getTo().getWorld().getEnvironment() == World.Environment.THE_END;
+        PortalLinks links = new PortalLinks(plugin.getWorldController());
+        if (!links.enabled(event.getFrom().getWorld(), end)) {
+            event.setCancelled(true);
+            return;
+        }
+        try {
+            Optional<SpigotPortalMeta> portal = plugin.getPortalRegistry().findCornersFromPosition(event.getFrom());
+            Optional<Location> destination = portal.isPresent() && portal.get().getDestination().isPresent()
+                    ? Optional.of(plugin.getWorldController().destination(portal.get().getDestination().get())) : links.destination(event.getFrom(), end);
+            destination.ifPresent(event::setTo);
+        } catch (RuntimeException e) {
+            event.setCancelled(true);
+            plugin.getLogger().warning("Could not route entity portal: " + e.getMessage());
+        }
     }
 }

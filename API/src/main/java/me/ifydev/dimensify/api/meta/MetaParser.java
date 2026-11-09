@@ -49,15 +49,15 @@ public class MetaParser {
         Optional<String> seed = Optional.empty();
 
         for (String part : meta) {
-            if (part.equalsIgnoreCase("structure")) structures = true;
+            if (part.equalsIgnoreCase("structure") || part.equalsIgnoreCase("structures")) structures = true;
             else if (part.toLowerCase().startsWith("env=")) {
-                String[] split = part.split("env=");
-                if (split.length != 2)
+                String[] split = part.split("=", 2);
+                if (split.length != 2 || split[1].isEmpty())
                     return new MetaResult(Optional.of(DimensifyConstants.ENV_NOT_PROVIDED), Optional.empty());
                 environment = Optional.of(split[1]);
             } else if (part.toLowerCase().startsWith("seed=")) {
-                String[] split = part.split("seed=");
-                if (split.length != 2)
+                String[] split = part.split("=", 2);
+                if (split.length != 2 || split[1].isEmpty())
                     return new MetaResult(Optional.of(DimensifyConstants.SEED_NOT_PROVIDED), Optional.empty());
                 seed = Optional.of(split[1]);
             }

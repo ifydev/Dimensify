@@ -24,114 +24,76 @@
  */
 package me.ifydev.dimensify.api.backend.impl;
 
-import me.ifydev.dimensify.api.DimensifyAPI;
 import me.ifydev.dimensify.api.backend.AbstractDataHandler;
-import me.ifydev.dimensify.api.backend.ConnectionError;
 import me.ifydev.dimensify.api.backend.ConnectionInformation;
 import me.ifydev.dimensify.api.dimensions.Dimension;
 import me.ifydev.dimensify.api.portal.PortalMeta;
 import me.ifydev.dimensify.api.portal.PortalType;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-/**
- * @author Innectic
- * @since 06/26/2018
- */
 public class SQLHandler extends AbstractDataHandler {
 
-    private boolean isUsingSQLite = false;
-    private String baseConnectionUrl;
+    private final boolean sqlite;
+    private final String url;
+    private String defaultWorld;
 
     public SQLHandler(ConnectionInformation connectionInformation) {
         super(connectionInformation);
-
-        String type;
-        String databaseURL;
-
-        if (connectionInformation.getMeta().containsKey("sqlite")) {
-            type = "sqlite";
-            Map sqliteData = (Map) connectionInformation.getMeta().get("sqlite");
-            databaseURL = (String) sqliteData.get("file");
-            isUsingSQLite = true;
+        if (connectionInformation == null) throw new IllegalArgumentException("Database connection settings are missing.");
+        sqlite = connectionInformation.getMeta().containsKey("sqlite");
+        if (sqlite) {
+            Map<?, ?> meta = (Map<?, ?>) connectionInformation.getMeta().get("sqlite");
+            url = "jdbc:sqlite:" + meta.get("file");
         } else {
-            type = "mysql";
-            databaseURL = "//" + connectionInformation.getUrl() + ":" + connectionInformation.getPort();
+            if (!connectionInformation.getDatabase().matches("[A-Za-z0-9_]+")) throw new IllegalArgumentException("Invalid database name.");
+            url = "jdbc:mysql://" + connectionInformation.getUrl() + ":" + connectionInformation.getPort() + "/" + connectionInformation.getDatabase();
         }
-        baseConnectionUrl = "jdbc:" + type + ":" + databaseURL;
     }
 
-    private Optional<Connection> getConnection() {
-        try {
-            if (isUsingSQLite) return Optional.ofNullable(DriverManager.getConnection(baseConnectionUrl));
-            String connectionURL = baseConnectionUrl + "/" + connectionInformation.getDatabase();
-            return Optional.ofNullable(DriverManager.getConnection(connectionURL, connectionInformation.getUsername(), connectionInformation.getPassword()));
-        } catch (SQLException e) {
-            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.of(e)));
-        }
-        return Optional.empty();
+    private Connection connection() throws SQLException {
+        return sqlite ? DriverManager.getConnection(url)
+                : DriverManager.getConnection(url, connectionInformation.getUsername(), connectionInformation.getPassword());
     }
 
     @Override
     public void initialize(String defaultWorld) {
-        this.dimensions = new ArrayList<>();
-
+        this.defaultWorld = defaultWorld;
         try {
-            Connection connection;
-            if (isUsingSQLite) connection = DriverManager.getConnection(baseConnectionUrl);
-            else connection = DriverManager.getConnection(baseConnectionUrl, connectionInformation.getUsername(), connectionInformation.getPassword());
-            if (connection == null) {
-                DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-                return;
+            Class.forName(sqlite ? "org.sqlite.JDBC" : "com.mysql.cj.jdbc.Driver");
+            try (Connection connection = connection(); Statement statement = connection.createStatement()) {
+                statement.execute("CREATE TABLE IF NOT EXISTS dimensions (`name` VARCHAR(50) NOT NULL, `type` VARCHAR(20) NOT NULL, meta VARCHAR(767), `default` TINYINT NOT NULL)");
+                statement.execute("CREATE TABLE IF NOT EXISTS portals (`world` VARCHAR(50) NOT NULL, x1 INTEGER NOT NULL, x2 INTEGER NOT NULL, y1 INTEGER NOT NULL, y2 INTEGER NOT NULL, z1 INTEGER NOT NULL, z2 INTEGER NOT NULL, destination VARCHAR(60), `type` VARCHAR(60) NOT NULL, `name` VARCHAR(60) NOT NULL)");
             }
-
-            String database = connectionInformation.getDatabase();
-
-            if (!isUsingSQLite) {
-                PreparedStatement statement = connection.prepareStatement("CREATE DATABASE IF NOT EXISTS " + database);
-                statement.execute();
-                statement.close();
-                database += ".";
-            } else database = "";
-
-            PreparedStatement dimensionsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
-                    "dimensions (`name` VARCHAR(50) NOT NULL, `type` VARCHAR(20) NOT NULL, meta VARCHAR(767), `default` TINYINT NOT NULL)");
-            dimensionsStatement.execute();
-            dimensionsStatement.close();
-
-            PreparedStatement portalsStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + database +
-                    "portals (`world` VARCHAR(50) NOT NULL, x1 INTEGER NOT NULL, x2 INTEGER NOT NULL, y1 INTEGER NOT NULL, y2 INTEGER NOT NULL" +
-                    ", z1 INTEGER NOT NULL, z2 INTEGER NOT NULL, destination VARCHAR(60), `type` VARCHAR(60) NOT NULL, `name` VARCHAR(60) NOT NULL)");
-            portalsStatement.execute();
-            portalsStatement.close();
-
-            connection.close();
-        } catch (SQLException e) {
-            System.out.println("Encountered an error while trying to setup the database:");
-            e.printStackTrace();
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new IllegalStateException("Could not initialize database. For MySQL, create the configured database first.", e);
         }
     }
 
     @Override
     public boolean connect() {
-        Optional<Connection> connection = getConnection();
-        boolean connected = connection.isPresent();
-
-        connection.ifPresent(c -> {
-            try {
-                c.close();
-            } catch (SQLException ignored) {}
-        });
-        return connected;
+        try (Connection connection = connection()) {
+            return !connection.isClosed();
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     @Override
     public void reload() {
-        this.drop();
-
-        this.portals = this.getPortals(true);
-        this.dimensions = this.getDimensions(true);
+        List<Dimension> loadedDimensions = getDimensions(true);
+        List<PortalMeta> loadedPortals = getPortals(true);
+        dimensions = loadedDimensions;
+        portals = loadedPortals;
     }
 
     @Override
@@ -140,267 +102,119 @@ public class SQLHandler extends AbstractDataHandler {
         portals = new ArrayList<>();
     }
 
-    @Override
-    public boolean createPortal(PortalMeta meta) {
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
-        }
-        this.portals.add(meta);
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO portals " +
-                    "(world, x1, y1, z1, x2, y2, z2, destination, `type`, `name`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
-            statement.setString(1, meta.getWorld());
-            statement.setInt(2, meta.getX1());
-            statement.setInt(3, meta.getY1());
-            statement.setInt(4, meta.getZ1());
-
-            statement.setInt(5, meta.getX2());
-            statement.setInt(6, meta.getY2());
-            statement.setInt(7, meta.getZ2());
-
-            statement.setString(8, meta.getDestination().orElse(null));
-            statement.setString(9, meta.getType().name());
-            statement.setString(10, meta.getName());
-
-            statement.execute();
-            statement.close();
-            connection.get().close();
+    private boolean update(String sql, Object... values) {
+        try (Connection connection = connection(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (int i = 0; i < values.length; i++) statement.setObject(i + 1, values[i]);
+            if (statement.executeUpdate() == 0) return false;
+            reload();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Could not update database.", e);
         }
-        return false;
+    }
+
+    @Override
+    public boolean createPortal(PortalMeta meta) {
+        if (getPortal(meta.getName()).isPresent()) return false;
+        return update("INSERT INTO portals (world, x1, y1, z1, x2, y2, z2, destination, `type`, `name`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                meta.getWorld(), meta.getX1(), meta.getY1(), meta.getZ1(), meta.getX2(), meta.getY2(), meta.getZ2(),
+                meta.getDestination().orElse(null), meta.getType().name(), meta.getName());
     }
 
     @Override
     public boolean removePortal(String name) {
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
-        }
-        this.portals.removeIf(portal -> portal.getName().equalsIgnoreCase(name));
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM portals WHERE `name`=?");
-            statement.setString(1, name);
-
-            statement.execute();
-            statement.close();
-            connection.get().close();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+        Optional<PortalMeta> portal = getPortal(name);
+        return portal.isPresent() && update("DELETE FROM portals WHERE `name`=?", portal.get().getName());
     }
 
     @Override
     public List<PortalMeta> getPortals(boolean skipCache) {
-        if (!skipCache) return portals;
-
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return Collections.emptyList();
-
-        List<PortalMeta> portals = new ArrayList<>();
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM portals");
-            ResultSet results = statement.executeQuery();
-
-            while (results.next())
-                portals.add(new PortalMeta(
-                        results.getString("name"),
-                        results.getInt("x1"), results.getInt("x2"), results.getInt("y1"),
-                        results.getInt("y2"), results.getInt("z1"), results.getInt("z2"),
-                        results.getString("world"), Optional.ofNullable(results.getString("destination")),
-                        PortalType.findType(results.getString("type"))
-                ));
-            results.close();
-            statement.close();
-            connection.get().close();
+        if (!skipCache) return new ArrayList<>(portals);
+        List<PortalMeta> loaded = new ArrayList<>();
+        try (Connection connection = connection(); PreparedStatement statement = connection.prepareStatement("SELECT * FROM portals"); ResultSet results = statement.executeQuery()) {
+            while (results.next()) {
+                loaded.add(new PortalMeta(results.getString("name"), results.getInt("x1"), results.getInt("x2"),
+                        results.getInt("y1"), results.getInt("y2"), results.getInt("z1"), results.getInt("z2"), results.getString("world"),
+                        Optional.ofNullable(results.getString("destination")), PortalType.findType(results.getString("type"))));
+            }
+            return loaded;
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Could not load portals.", e);
         }
-        return portals;
     }
 
     @Override
     public boolean setPortalDestination(String portal, String destination) {
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
-        }
-
-        Optional<PortalMeta> meta = this.getPortal(portal);
+        Optional<PortalMeta> meta = getPortal(portal);
         if (!meta.isPresent()) return false;
-        meta.get().setDestination(Optional.of(destination));
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("UPDATE portals SET destination=? WHERE `name`=?");
-            statement.setString(1, destination);
-            statement.setString(2, portal);
-            statement.execute();
-
-            statement.close();
-            connection.get().close();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+        if (meta.get().getDestination().filter(destination::equals).isPresent()) return true;
+        return update("UPDATE portals SET destination=? WHERE `name`=?", destination, meta.get().getName());
     }
 
     @Override
     public List<Dimension> getDimensions(boolean skipCache) {
-        if (!skipCache) return this.dimensions;
-
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return Collections.emptyList();
-
-        List<Dimension> dimensions = new ArrayList<>();
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM dimensions");
-            ResultSet results = statement.executeQuery();
-
-            while (results.next())
-                dimensions.add(new Dimension(
-                        results.getString("name"), results.getString("type"),
-                        Optional.ofNullable(results.getString("meta")), results.getBoolean("default")));
-            results.close();
-            statement.close();
-            connection.get().close();
+        if (!skipCache) return new ArrayList<>(dimensions);
+        List<Dimension> loaded = new ArrayList<>();
+        try (Connection connection = connection(); PreparedStatement statement = connection.prepareStatement("SELECT * FROM dimensions"); ResultSet results = statement.executeQuery()) {
+            while (results.next()) loaded.add(new Dimension(results.getString("name"), results.getString("type"),
+                    Optional.ofNullable(results.getString("meta")), results.getBoolean("default")));
+            return loaded;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return Collections.emptyList();
+            throw new IllegalStateException("Could not load worlds.", e);
         }
-        return dimensions;
     }
 
     @Override
     public Optional<Dimension> getDimension(String name) {
-        String defaultDimension = getDefaultDimension(false);
-        if (name.equalsIgnoreCase(defaultDimension)) return Optional.of(new Dimension(defaultDimension, "", Optional.empty(), false));
-        return this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
+        return dimensions.stream().filter(dimension -> dimension.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override
     public Optional<PortalMeta> getPortal(String name) {
-        return this.portals.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
+        return portals.stream().filter(portal -> portal.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     @Override
     public boolean setDefaultDimension(String name) {
-        this.dimensions.stream().filter(Dimension::isDefault).findFirst().ifPresent(dim -> dim.setDefault(false));
-
-        Optional<Dimension> dimension = dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
+        Optional<Dimension> dimension = getDimension(name);
         if (!dimension.isPresent()) return false;
-
-        dimension.get().setDefault(true);
-
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
-        }
-        try {
-            PreparedStatement removeCurrent = connection.get().prepareStatement("UPDATE dimensions SET `default`=0 WHERE `default`=1");
-            removeCurrent.execute();
-            removeCurrent.close();
-
-            PreparedStatement update = connection.get().prepareStatement("UPDATE dimensions SET `default`=1 WHERE `name`=?");
-            update.setString(1, dimension.get().getName());
-            update.execute();
-            update.close();
-            connection.get().close();
+        try (Connection connection = connection()) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement reset = connection.prepareStatement("UPDATE dimensions SET `default`=0");
+                 PreparedStatement set = connection.prepareStatement("UPDATE dimensions SET `default`=1 WHERE `name`=?")) {
+                reset.executeUpdate();
+                set.setString(1, dimension.get().getName());
+                if (set.executeUpdate() == 0) {
+                    connection.rollback();
+                    return false;
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Could not set default world.", e);
         }
+        reload();
         return true;
     }
 
     @Override
     public String getDefaultDimension(boolean skipCache) {
-        if (!skipCache)
-            for (Dimension dimension : this.getDimensions(false)) if (dimension.isDefault()) return dimension.getName();
-
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) return "";
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("SELECT * FROM dimensions WHERE `default`=1");
-            ResultSet results = statement.executeQuery();
-
-            String name = results.next() ? results.getString("name") : "";
-
-            results.close();
-            statement.close();
-            connection.get().close();
-
-            return name;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "";
+        return getDimensions(skipCache).stream().filter(Dimension::isDefault).map(Dimension::getName).findFirst().orElse(defaultWorld);
     }
 
     @Override
     public boolean createDimension(Dimension dimension) {
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
-        }
-
-        if (dimensions.stream().anyMatch(d -> d.getName().equalsIgnoreCase(dimension.getName()))) return false;
-        this.dimensions.add(dimension);
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("INSERT INTO dimensions (`name`, `default`, `type`, `meta`)" +
-                    " VALUES (?, ?, ?, ?)");
-
-            statement.setString(1, dimension.getName());
-            statement.setBoolean(2, dimension.isDefault());
-            statement.setString(3, dimension.getType());
-            statement.setString(4, dimension.getMeta().orElse(""));
-
-            statement.execute();
-            statement.close();
-            connection.get().close();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+        if (getDimension(dimension.getName()).isPresent()) return false;
+        return update("INSERT INTO dimensions (`name`, `default`, `type`, meta) VALUES (?, ?, ?, ?)",
+                dimension.getName(), dimension.isDefault(), dimension.getType(), dimension.getMeta().orElse(""));
     }
 
     @Override
     public boolean removeDimension(String name) {
-        Optional<Connection> connection = getConnection();
-        if (!connection.isPresent()) {
-            DimensifyAPI.get().ifPresent(api -> api.getDisplayUtil().displayError(ConnectionError.REJECTED, Optional.empty()));
-            return false;
-        }
-
-        Optional<Dimension> dimension = this.dimensions.stream().filter(d -> d.getName().equalsIgnoreCase(name)).findFirst();
-        if (!dimension.isPresent()) return false;
-        dimensions.remove(dimension.get());
-
-        try {
-            PreparedStatement statement = connection.get().prepareStatement("DELETE FROM dimensions WHERE `name`=?");
-            statement.setString(1, name);
-            statement.execute();
-
-            statement.close();
-            connection.get().close();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+        Optional<Dimension> dimension = getDimension(name);
+        return dimension.isPresent() && update("DELETE FROM dimensions WHERE `name`=?", dimension.get().getName());
     }
 }

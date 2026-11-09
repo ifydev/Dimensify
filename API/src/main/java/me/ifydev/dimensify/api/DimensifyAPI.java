@@ -41,9 +41,9 @@ import java.util.Optional;
  */
 public class DimensifyAPI {
 
-    private static Optional<DimensifyAPI> api;
+    private static Optional<DimensifyAPI> api = Optional.empty();
 
-    @Getter private Optional<AbstractDataHandler> databaseHandler;
+    @Getter private Optional<AbstractDataHandler> databaseHandler = Optional.empty();
     @Getter private DisplayUtil displayUtil;
 
     public void initialize(String defaultWorld, DisplayUtil displayUtil, Class<? extends AbstractDataHandler> handler, BackendType backendType, Optional<ConnectionInformation> connectionInformation) throws Exception {
@@ -59,13 +59,10 @@ public class DimensifyAPI {
         }
         if (!databaseHandler.isPresent()) throw new Exception("No data handler present.");
 
-        databaseHandler.ifPresent(h -> {
-            System.out.println("Using " + defaultWorld + " as the default world...");
-            h.initialize(defaultWorld);
-            h.reload();
-            if (h.connect()) System.out.println("Connected to database!");
-            else System.out.println("Unable to connect to database!");
-        });
+        AbstractDataHandler dataHandler = databaseHandler.get();
+        dataHandler.initialize(defaultWorld);
+        if (!dataHandler.connect()) throw new IllegalStateException("Unable to connect to database.");
+        dataHandler.reload();
     }
 
     public static Optional<DimensifyAPI> get() {

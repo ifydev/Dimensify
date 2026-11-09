@@ -50,9 +50,6 @@ public class DimensifyWorld extends WorldCreator {
 
     @Override
     public World createWorld() {
-        // Register it with the plugin
-        plugin.getApi().getDatabaseHandler().ifPresent(handler ->
-                handler.createDimension(new Dimension(this.name(), this.type().getName(), meta, isDefault)));
         return super.createWorld();
     }
 }

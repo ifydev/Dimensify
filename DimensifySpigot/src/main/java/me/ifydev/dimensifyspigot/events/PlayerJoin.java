@@ -24,29 +24,37 @@
  */
 package me.ifydev.dimensifyspigot.events;
 
+import lombok.RequiredArgsConstructor;
 import me.ifydev.dimensifyspigot.DimensifyMain;
-import org.bukkit.entity.Player;
+import me.ifydev.dimensifyspigot.world.WorldProperties;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.World;
 
-/**
- * @author Innectic
- * @since 10/1/2017
- */
+@RequiredArgsConstructor
 public class PlayerJoin implements Listener {
 
-    @EventHandler
-    public void onPlayerJoinEvent(PlayerJoinEvent e) {
-        Player player = e.getPlayer();
-        if (player == null) return;
+    private final DimensifyMain plugin;
 
-        DimensifyMain plugin = DimensifyMain.get();
-        if (plugin.isSendPlayersToDefaultWorldOnLogin()) {
-            plugin.getApi().getDatabaseHandler().ifPresent(db -> {
-                String dimension = db.getDefaultDimension(false);
-                plugin.getWorldController().getWorld(dimension).ifPresent(dim -> player.teleport(dim.getSpawnLocation()));
-            });
+    @EventHandler
+    public void onPlayerJoinEvent(PlayerJoinEvent event) {
+        try {
+            plugin.getInventories().join(event.getPlayer());
+            if (plugin.isSendPlayersToDefaultWorldOnLogin()) {
+                String world = plugin.getApi().getDatabaseHandler().get().getDefaultDimension(false);
+                if (!world.isEmpty()) plugin.getWorldController().teleport(event.getPlayer(), plugin.getWorldController().destination(world));
+            }
+            if (!plugin.getWorldController().canEnter(event.getPlayer(), event.getPlayer().getWorld())) {
+                World fallback = Bukkit.getWorlds().get(0);
+                if (!plugin.getWorldController().teleport(event.getPlayer(), plugin.getWorldController().spawn(fallback)))
+                    throw new IllegalStateException("Could not enter the fallback world.");
+            }
+            WorldProperties.applyPlayer(event.getPlayer(), plugin.getWorldController().getSettings().get(event.getPlayer().getWorld().getName()));
+        } catch (RuntimeException e) {
+            plugin.getLogger().severe("Could not load player data: " + e.getMessage());
+            event.getPlayer().kickPlayer("Could not load your world data. Please contact an administrator.");
         }
     }
 }

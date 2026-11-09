@@ -26,11 +26,11 @@ package me.ifydev.dimensifyspigot.portal.algo;
 
 import me.ifydev.dimensifyspigot.portal.PortalCorners;
 import me.ifydev.dimensifyspigot.util.DirectionUtil;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.Location;
+import org.bukkit.Material;
 
 import java.util.Optional;
 
@@ -42,16 +42,17 @@ public class PortalCornerDetection {
 
     public static Optional<PortalCorners> findPortalCornersFromAnyCorner(Player player, Location starting) {
         final int MAX_HEIGHT = starting.getWorld().getMaxHeight();
+        final int MIN_HEIGHT = starting.getWorld().getMinHeight();
         final int MAX_DISTANCE = 128;
 
         DirectionUtil.CardinalDirection direction = DirectionUtil.getDirection(player);
 
         boolean facingNorthSouth = direction == DirectionUtil.CardinalDirection.NORTH || direction == DirectionUtil.CardinalDirection.SOUTH;
 
-        boolean portalDown = starting.getBlock().getRelative(BlockFace.DOWN).getType() == Material.PORTAL;
-        boolean portalUp = starting.getBlock().getRelative(BlockFace.UP).getType() == Material.PORTAL;
-        boolean portalLeft = starting.getBlock().getRelative(facingNorthSouth ? BlockFace.WEST : BlockFace.SOUTH).getType() == Material.PORTAL;
-        boolean portalRight = starting.getBlock().getRelative(facingNorthSouth ? BlockFace.EAST : BlockFace.NORTH).getType() == Material.PORTAL;
+        boolean portalDown = starting.getBlock().getRelative(BlockFace.DOWN).getType() == Material.NETHER_PORTAL;
+        boolean portalUp = starting.getBlock().getRelative(BlockFace.UP).getType() == Material.NETHER_PORTAL;
+        boolean portalLeft = starting.getBlock().getRelative(facingNorthSouth ? BlockFace.WEST : BlockFace.SOUTH).getType() == Material.NETHER_PORTAL;
+        boolean portalRight = starting.getBlock().getRelative(facingNorthSouth ? BlockFace.EAST : BlockFace.NORTH).getType() == Material.NETHER_PORTAL;
 
         boolean isBottom = true;
         boolean isLeft = true;
@@ -72,9 +73,9 @@ public class PortalCornerDetection {
             }
             Block next;
             next = current.getRelative(isBottom ? BlockFace.UP : BlockFace.DOWN);
-            if (next.getType() != Material.PORTAL) break;
+            if (next.getType() != Material.NETHER_PORTAL) break;
 
-            if (next.getY() >= MAX_HEIGHT || next.getY() <= 0) {
+            if (next.getY() >= MAX_HEIGHT || next.getY() < MIN_HEIGHT) {
                 current = null;
                 break;
             }
@@ -98,7 +99,7 @@ public class PortalCornerDetection {
             if (!isLeft) next = current.getRelative(facingNorthSouth ? BlockFace.WEST : BlockFace.SOUTH);
             else next = current.getRelative(facingNorthSouth ? BlockFace.EAST : BlockFace.NORTH);
 
-            if (next.getType() != Material.PORTAL) break;
+            if (next.getType() != Material.NETHER_PORTAL) break;
             current = next;
             distanceMoved++;
         } while (true);
